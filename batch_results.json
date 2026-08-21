@@ -1,0 +1,589 @@
+{
+  "run_at": "2026-08-21T19:33:32.811854",
+  "metrics": {
+    "total_cases": 100,
+    "total_revenue_at_risk_inr": 154400.0,
+    "recovered_cases": 6,
+    "total_recovered_inr": 13194.0,
+    "recovery_rate_percent": 6.0,
+    "escalated_cases": 0,
+    "still_open_cases": 94,
+    "failure_code_breakdown": {
+      "mandate_revoked": 11,
+      "bank_timeout": 10,
+      "invalid_account": 15,
+      "do_not_honor": 17,
+      "soft_decline": 13,
+      "card_expired": 7,
+      "insufficient_funds": 12,
+      "issuer_unavailable": 15
+    }
+  },
+  "results": [
+    {
+      "case_id": "CASE0001",
+      "success": true,
+      "diagnosis": {
+        "root_cause": "mandate_issue",
+        "severity": "high",
+        "is_recoverable": false,
+        "recommended_strategy": "Request the customer to re-initiate the mandate and retry the payment.",
+        "reasoning": "The customer has explicitly revoked the mandate, making it impossible to recover the payment without their consent."
+      },
+      "decision": {
+        "action": "send_whatsapp",
+        "channel": "whatsapp",
+        "message_tone": "polite",
+        "message_body": "Hi Reyansh, your payment for subscription sub_0001 failed due to mandate revocation. Please re-initiate the mandate and try again. Thanks!",
+        "retry_delay_hours": 0,
+        "reasoning": "Since the customer has revoked the mandate, a polite request to re-initiate the mandate is the best next step. WhatsApp is preferred for Indian customers."
+      },
+      "execution_result": {
+        "success": true,
+        "action": "send_whatsapp",
+        "payment_link": "https://rzp.io/rzp/xDOftRm",
+        "message_result": {
+          "success": true,
+          "channel": "whatsapp",
+          "to": "919831213917",
+          "message": "Hi Reyansh, your payment for subscription sub_0001 failed due to mandate revocation. Please re-initiate the mandate and try again. Thanks!\n\nPay here: https://rzp.io/rzp/xDOftRm",
+          "sent_at": "2026-08-21T14:02:57.707167"
+        },
+        "payment_simulation": {
+          "success": true,
+          "paid": false,
+          "probability_used": 0.28
+        }
+      },
+      "final_status": null,
+      "is_escalated": false
+    },
+    {
+      "case_id": "CASE0002",
+      "success": true,
+      "diagnosis": {
+        "root_cause": "technical_error",
+        "severity": "medium",
+        "is_recoverable": true,
+        "recommended_strategy": "Retry the payment with a slight delay to allow the bank to respond",
+        "reasoning": "The bank timeout suggests a temporary issue with the bank's server or network, which may resolve itself with a retry"
+      },
+      "decision": {
+        "action": "schedule_retry",
+        "channel": "none",
+        "message_tone": "none",
+        "message_body": "",
+        "retry_delay_hours": 2,
+        "reasoning": "The bank timeout suggests a temporary issue with the bank's server or network, which may resolve itself with a retry after a slight delay"
+      },
+      "execution_result": {
+        "success": true,
+        "case_id": "CASE0002",
+        "scheduled_in_hours": 2,
+        "scheduled_at": "2026-08-21T14:03:00.884644"
+      },
+      "final_status": null,
+      "is_escalated": false
+    },
+    {
+      "case_id": "CASE0003",
+      "success": true,
+      "diagnosis": {
+        "root_cause": "expired_instrument",
+        "severity": "high",
+        "is_recoverable": false,
+        "recommended_strategy": "Request customer to update UPI account details",
+        "reasoning": "Invalid account details indicate that the UPI account is either invalid or has been deactivated, making it unrecoverable."
+      },
+      "decision": {
+        "action": "send_whatsapp",
+        "channel": "whatsapp",
+        "message_tone": "polite",
+        "message_body": "Hi Diya, your UPI account details seem to be invalid. Please update your account details to continue your subscription.",
+        "retry_delay_hours": 0,
+        "reasoning": "Since the account is unrecoverable, we should inform the customer about the issue and ask them to update their account details. WhatsApp is preferred for Indian customers."
+      },
+      "execution_result": {
+        "success": true,
+        "action": "send_whatsapp",
+        "payment_link": "https://rzp.io/rzp/C0ZXsWq",
+        "message_result": {
+          "success": true,
+          "channel": "whatsapp",
+          "to": "919883369838",
+          "message": "Hi Diya, your UPI account details seem to be invalid. Please update your account details to continue your subscription.\n\nPay here: https://rzp.io/rzp/C0ZXsWq",
+          "sent_at": "2026-08-21T14:03:03.201693"
+        },
+        "payment_simulation": {
+          "success": true,
+          "paid": true,
+          "recovered_amount": 499900,
+          "probability_used": 0.22
+        }
+      },
+      "final_status": "recovered",
+      "is_escalated": false
+    },
+    {
+      "case_id": "CASE0004",
+      "success": true,
+      "diagnosis": {
+        "root_cause": "hard_decline",
+        "severity": "high",
+        "is_recoverable": false,
+        "recommended_strategy": "Contact customer to update payment method or provide an alternative payment method",
+        "reasoning": "The failure code 'do_not_honor' indicates a hard decline, which is typically irreversible. The customer may have insufficient funds or a problem with their UPI payment method."
+      },
+      "decision": {
+        "action": "send_whatsapp",
+        "channel": "whatsapp",
+        "message_tone": "polite",
+        "message_body": "Hi Sai, we couldn't process your payment due to a hard decline. Please update your payment method or try an alternative method. We're here to help.",
+        "retry_delay_hours": 0,
+        "reasoning": "Since the customer has already had a hard decline, it's best to politely ask them to update their payment method or try an alternative method via WhatsApp, as it's the preferred channel for Indian customers."
+      },
+      "execution_result": {
+        "success": true,
+        "action": "send_whatsapp",
+        "payment_link": "https://rzp.io/rzp/xYo2XQiD",
+        "message_result": {
+          "success": true,
+          "channel": "whatsapp",
+          "to": "919837555510",
+          "message": "Hi Sai, we couldn't process your payment due to a hard decline. Please update your payment method or try an alternative method. We're here to help.\n\nPay here: https://rzp.io/rzp/xYo2XQiD",
+          "sent_at": "2026-08-21T14:03:05.639112"
+        },
+        "payment_simulation": {
+          "success": true,
+          "paid": true,
+          "recovered_amount": 99900,
+          "probability_used": 0.22
+        }
+      },
+      "final_status": "recovered",
+      "is_escalated": false
+    },
+    {
+      "case_id": "CASE0005",
+      "success": true,
+      "diagnosis": {
+        "root_cause": "mandate_issue",
+        "severity": "high",
+        "is_recoverable": false,
+        "recommended_strategy": "Reach out to the customer to re-establish the mandate",
+        "reasoning": "Customer has explicitly revoked the mandate, making it impossible to recover the payment"
+      },
+      "decision": {
+        "action": "send_whatsapp",
+        "channel": "whatsapp",
+        "message_tone": "polite",
+        "message_body": "Hi Vivaan, we noticed that you revoked the UPI mandate for your subscription. Please update your payment method to continue enjoying our services.",
+        "retry_delay_hours": 0,
+        "reasoning": "Since the customer has revoked the mandate, the best course of action is to politely ask them to update their payment method, as per the recommended strategy."
+      },
+      "execution_result": {
+        "success": true,
+        "action": "send_whatsapp",
+        "payment_link": "https://rzp.io/rzp/KNlczJA",
+        "message_result": {
+          "success": true,
+          "channel": "whatsapp",
+          "to": "919869965471",
+          "message": "Hi Vivaan, we noticed that you revoked the UPI mandate for your subscription. Please update your payment method to continue enjoying our services.\n\nPay here: https://rzp.io/rzp/KNlczJA",
+          "sent_at": "2026-08-21T14:03:08.302109"
+        },
+        "payment_simulation": {
+          "success": true,
+          "paid": false,
+          "probability_used": 0.28
+        }
+      },
+      "final_status": null,
+      "is_escalated": false
+    },
+    {
+      "case_id": "CASE0006",
+      "success": true,
+      "diagnosis": {
+        "root_cause": "hard_decline",
+        "severity": "high",
+        "is_recoverable": false,
+        "recommended_strategy": "Reach out to customer for alternative payment method",
+        "reasoning": "The failure code 'do_not_honor' and description 'Do not honor' indicate a hard decline, which is typically a bank-level decision and not recoverable."
+      },
+      "decision": {
+        "action": "send_whatsapp",
+        "channel": "whatsapp",
+        "message_tone": "polite",
+        "message_body": "Hi Krishna, we couldn't process your payment due to a bank issue. Please update your payment method to continue your subscription.",
+        "retry_delay_hours": 0,
+        "reasoning": "Since the diagnosis indicates a hard decline and the customer is not recoverable, we should ask the customer to update their payment method to continue their subscription. WhatsApp is preferred for Indian customers."
+      },
+      "execution_result": {
+        "success": true,
+        "action": "send_whatsapp",
+        "payment_link": "https://rzp.io/rzp/CIETLJAM",
+        "message_result": {
+          "success": true,
+          "channel": "whatsapp",
+          "to": "919828562779",
+          "message": "Hi Krishna, we couldn't process your payment due to a bank issue. Please update your payment method to continue your subscription.\n\nPay here: https://rzp.io/rzp/CIETLJAM",
+          "sent_at": "2026-08-21T14:03:10.975114"
+        },
+        "payment_simulation": {
+          "success": true,
+          "paid": false,
+          "probability_used": 0.22
+        }
+      },
+      "final_status": null,
+      "is_escalated": false
+    },
+    {
+      "case_id": "CASE0007",
+      "success": true,
+      "diagnosis": {
+        "root_cause": "soft_decline",
+        "severity": "medium",
+        "is_recoverable": true,
+        "recommended_strategy": "Retry the transaction after 24 hours to allow the issuer to re-process the request.",
+        "reasoning": "Soft decline indicates a temporary decline by the issuer, which may be resolved after a short period of time."
+      },
+      "decision": {
+        "action": "send_email",
+        "channel": "email",
+        "message_tone": "polite",
+        "message_body": "Dear Vivaan, We're trying to help you complete your payment. Please try again after 24 hours. Best regards, Team",
+        "retry_delay_hours": 24,
+        "reasoning": "Following the recommended strategy to retry the transaction after 24 hours to allow the issuer to re-process the request."
+      },
+      "execution_result": {
+        "success": true,
+        "action": "send_email",
+        "payment_link": "https://rzp.io/rzp/S7G1CkV",
+        "message_result": {
+          "success": true,
+          "channel": "email",
+          "to": "vivaan.verma2@outlook.com",
+          "message": "Dear Vivaan, We're trying to help you complete your payment. Please try again after 24 hours. Best regards, Team\n\nPay here: https://rzp.io/rzp/S7G1CkV",
+          "sent_at": "2026-08-21T14:03:14.416684"
+        },
+        "payment_simulation": {
+          "success": true,
+          "paid": false,
+          "probability_used": 0.55
+        }
+      },
+      "final_status": null,
+      "is_escalated": false
+    },
+    {
+      "case_id": "CASE0008",
+      "success": true,
+      "diagnosis": {
+        "root_cause": "soft_decline",
+        "severity": "medium",
+        "is_recoverable": true,
+        "recommended_strategy": "Retry the transaction after 24 hours to allow the issuer to reprocess the request",
+        "reasoning": "The soft decline indicates a temporary issue with the customer's netbanking account, which may resolve itself after a short period."
+      },
+      "decision": {
+        "action": "send_whatsapp",
+        "channel": "whatsapp",
+        "message_tone": "polite",
+        "message_body": "Hi Ananya, your payment for \u20b9199 is temporarily declined. Please try again after 24 hours. Thanks!",
+        "retry_delay_hours": 24,
+        "reasoning": "Prefer WhatsApp for Indian customers, and send a polite reminder to try again after 24 hours as per the recommended strategy."
+      },
+      "execution_result": {
+        "success": true,
+        "action": "send_whatsapp",
+        "payment_link": "https://rzp.io/rzp/Nni4Rd5r",
+        "message_result": {
+          "success": true,
+          "channel": "whatsapp",
+          "to": "919886606329",
+          "message": "Hi Ananya, your payment for \u20b9199 is temporarily declined. Please try again after 24 hours. Thanks!\n\nPay here: https://rzp.io/rzp/Nni4Rd5r",
+          "sent_at": "2026-08-21T14:03:16.724633"
+        },
+        "payment_simulation": {
+          "success": true,
+          "paid": true,
+          "recovered_amount": 19900,
+          "probability_used": 0.55
+        }
+      },
+      "final_status": "recovered",
+      "is_escalated": false
+    },
+    {
+      "case_id": "CASE0009",
+      "success": true,
+      "diagnosis": {
+        "root_cause": "expired_instrument",
+        "severity": "high",
+        "is_recoverable": false,
+        "recommended_strategy": "Reach out to customer to update UPI ID and retry payment",
+        "reasoning": "The failure code 'invalid_account' suggests that the UPI account linked to the customer's payment method is invalid or expired, making it unrecoverable."
+      },
+      "decision": {
+        "action": "send_whatsapp",
+        "channel": "whatsapp",
+        "message_tone": "helpful",
+        "message_body": "Hi Aarav, your UPI ID seems to be expired. Please update it and try paying again. We're here to help.",
+        "retry_delay_hours": 0,
+        "reasoning": "Since the customer's UPI ID is expired, we should ask them to update it and retry the payment. WhatsApp is preferred for Indian customers."
+      },
+      "execution_result": {
+        "success": true,
+        "action": "send_whatsapp",
+        "payment_link": "https://rzp.io/rzp/St8MOo2q",
+        "message_result": {
+          "success": true,
+          "channel": "whatsapp",
+          "to": "919815911057",
+          "message": "Hi Aarav, your UPI ID seems to be expired. Please update it and try paying again. We're here to help.\n\nPay here: https://rzp.io/rzp/St8MOo2q",
+          "sent_at": "2026-08-21T14:03:18.832966"
+        },
+        "payment_simulation": {
+          "success": true,
+          "paid": false,
+          "probability_used": 0.22
+        }
+      },
+      "final_status": null,
+      "is_escalated": false
+    },
+    {
+      "case_id": "CASE0010",
+      "success": true,
+      "diagnosis": {
+        "root_cause": "mandate_issue",
+        "severity": "high",
+        "is_recoverable": false,
+        "recommended_strategy": "Notify customer and request a new mandate",
+        "reasoning": "Customer has explicitly revoked the mandate, making it impossible to recover the payment"
+      },
+      "decision": {
+        "action": "send_whatsapp",
+        "channel": "whatsapp",
+        "message_tone": "polite",
+        "message_body": "Hi Anika, we noticed that you revoked the payment mandate for your subscription. Please update your payment method to continue enjoying our services.",
+        "retry_delay_hours": 0,
+        "reasoning": "Since the customer has revoked the mandate, we should politely ask them to update their payment method. WhatsApp is preferred for Indian customers."
+      },
+      "execution_result": {
+        "success": true,
+        "action": "send_whatsapp",
+        "payment_link": "https://rzp.io/rzp/AzhkdbyL",
+        "message_result": {
+          "success": true,
+          "channel": "whatsapp",
+          "to": "919855754224",
+          "message": "Hi Anika, we noticed that you revoked the payment mandate for your subscription. Please update your payment method to continue enjoying our services.\n\nPay here: https://rzp.io/rzp/AzhkdbyL",
+          "sent_at": "2026-08-21T14:03:20.992674"
+        },
+        "payment_simulation": {
+          "success": true,
+          "paid": false,
+          "probability_used": 0.28
+        }
+      },
+      "final_status": null,
+      "is_escalated": false
+    },
+    {
+      "case_id": "CASE0011",
+      "success": true,
+      "diagnosis": {
+        "root_cause": "hard_decline",
+        "severity": "high",
+        "is_recoverable": false,
+        "recommended_strategy": "Contact customer for alternative payment method",
+        "reasoning": "The 'do_not_honor' failure code typically indicates a hard decline, suggesting that the customer's bank or UPI account does not have sufficient funds or has blocked the transaction."
+      },
+      "decision": {
+        "action": "send_whatsapp",
+        "channel": "whatsapp",
+        "message_tone": "polite",
+        "message_body": "Hi Diya, we couldn't complete your payment for \u20b92499. Please update your payment method so we can continue your subscription.",
+        "retry_delay_hours": 0,
+        "reasoning": "Since the diagnosis indicates a hard decline, we should ask the customer to update their payment method. WhatsApp is preferred for Indian customers."
+      },
+      "execution_result": {
+        "success": true,
+        "action": "send_whatsapp",
+        "payment_link": "https://rzp.io/rzp/qzgslGh",
+        "message_result": {
+          "success": true,
+          "channel": "whatsapp",
+          "to": "919838095223",
+          "message": "Hi Diya, we couldn't complete your payment for \u20b92499. Please update your payment method so we can continue your subscription.\n\nPay here: https://rzp.io/rzp/qzgslGh",
+          "sent_at": "2026-08-21T14:03:23.248177"
+        },
+        "payment_simulation": {
+          "success": true,
+          "paid": false,
+          "probability_used": 0.22
+        }
+      },
+      "final_status": null,
+      "is_escalated": false
+    },
+    {
+      "case_id": "CASE0012",
+      "success": true,
+      "diagnosis": {
+        "root_cause": "soft_decline",
+        "severity": "medium",
+        "is_recoverable": true,
+        "recommended_strategy": "Retry the payment after 24 hours to allow the issuer to resolve the temporary decline",
+        "reasoning": "The soft decline indicates a temporary issue with the payment method, and retrying the payment after 24 hours may resolve the issue."
+      },
+      "decision": {
+        "action": "send_whatsapp",
+        "channel": "whatsapp",
+        "message_tone": "polite",
+        "message_body": "Hi Navya, we're trying to help you with your subscription. Your payment was temporarily declined, but it might get approved after 24 hours. Please try again then.",
+        "retry_delay_hours": 24,
+        "reasoning": "We're sending a polite message to Navya via WhatsApp, as it's her preferred channel, to inform her about the temporary decline and ask her to try again after 24 hours."
+      },
+      "execution_result": {
+        "success": true,
+        "action": "send_whatsapp",
+        "payment_link": "https://rzp.io/rzp/Y48uKbv",
+        "message_result": {
+          "success": true,
+          "channel": "whatsapp",
+          "to": "919837200771",
+          "message": "Hi Navya, we're trying to help you with your subscription. Your payment was temporarily declined, but it might get approved after 24 hours. Please try again then.\n\nPay here: https://rzp.io/rzp/Y48uKbv",
+          "sent_at": "2026-08-21T14:03:25.690536"
+        },
+        "payment_simulation": {
+          "success": true,
+          "paid": true,
+          "recovered_amount": 499900,
+          "probability_used": 0.55
+        }
+      },
+      "final_status": "recovered",
+      "is_escalated": false
+    },
+    {
+      "case_id": "CASE0013",
+      "success": true,
+      "diagnosis": {
+        "root_cause": "expired_instrument",
+        "severity": "high",
+        "is_recoverable": false,
+        "recommended_strategy": "Update the customer's payment method to a valid card",
+        "reasoning": "The card has expired, making it impossible to process the payment. Updating the payment method is the only viable solution."
+      },
+      "decision": {
+        "action": "send_whatsapp",
+        "channel": "whatsapp",
+        "message_tone": "polite",
+        "message_body": "Hi Krishna, your card has expired. Please update your payment method to continue your subscription.",
+        "retry_delay_hours": 0,
+        "reasoning": "The card has expired, so we should ask the customer to update their payment method via WhatsApp, as it's the preferred channel for Indian customers."
+      },
+      "execution_result": {
+        "success": true,
+        "action": "send_whatsapp",
+        "payment_link": "https://rzp.io/rzp/4KwWLqix",
+        "message_result": {
+          "success": true,
+          "channel": "whatsapp",
+          "to": "919853954533",
+          "message": "Hi Krishna, your card has expired. Please update your payment method to continue your subscription.\n\nPay here: https://rzp.io/rzp/4KwWLqix",
+          "sent_at": "2026-08-21T14:03:27.873844"
+        },
+        "payment_simulation": {
+          "success": true,
+          "paid": false,
+          "probability_used": 0.28
+        }
+      },
+      "final_status": null,
+      "is_escalated": false
+    },
+    {
+      "case_id": "CASE0014",
+      "success": true,
+      "diagnosis": {
+        "root_cause": "expired_instrument",
+        "severity": "high",
+        "is_recoverable": false,
+        "recommended_strategy": "Update the customer's payment method to a valid one",
+        "reasoning": "The card has expired, making it impossible to process the payment. Further attempts will also fail."
+      },
+      "decision": {
+        "action": "send_whatsapp",
+        "channel": "whatsapp",
+        "message_tone": "helpful",
+        "message_body": "Hi Vihaan, your card has expired. Please update your payment method to complete the subscription.",
+        "retry_delay_hours": 0,
+        "reasoning": "The card has expired, so it's best to inform the customer to update their payment method via WhatsApp, which is the preferred channel for Indian customers."
+      },
+      "execution_result": {
+        "success": true,
+        "action": "send_whatsapp",
+        "payment_link": "https://rzp.io/rzp/dbFmjQZi",
+        "message_result": {
+          "success": true,
+          "channel": "whatsapp",
+          "to": "919865248306",
+          "message": "Hi Vihaan, your card has expired. Please update your payment method to complete the subscription.\n\nPay here: https://rzp.io/rzp/dbFmjQZi",
+          "sent_at": "2026-08-21T14:03:30.153945"
+        },
+        "payment_simulation": {
+          "success": true,
+          "paid": true,
+          "recovered_amount": 149900,
+          "probability_used": 0.28
+        }
+      },
+      "final_status": "recovered",
+      "is_escalated": false
+    },
+    {
+      "case_id": "CASE0015",
+      "success": true,
+      "diagnosis": {
+        "root_cause": "insufficient_funds",
+        "severity": "high",
+        "is_recoverable": false,
+        "recommended_strategy": "Do not attempt recovery, inform customer of insufficient funds",
+        "reasoning": "The customer does not have sufficient funds in their account to complete the payment, making recovery unsuccessful."
+      },
+      "decision": {
+        "action": "send_whatsapp",
+        "channel": "whatsapp",
+        "message_tone": "polite",
+        "message_body": "Hi Aarav, we couldn't process your payment due to insufficient funds. Please update your payment method to continue your subscription.",
+        "retry_delay_hours": 0,
+        "reasoning": "Since the customer doesn't have sufficient funds, it's best to inform them to update their payment method via WhatsApp, as it's the preferred channel for Indian customers."
+      },
+      "execution_result": {
+        "success": true,
+        "action": "send_whatsapp",
+        "payment_link": "https://rzp.io/rzp/6fT2ulLQ",
+        "message_result": {
+          "success": true,
+          "channel": "whatsapp",
+          "to": "919830200183",
+          "message": "Hi Aarav, we couldn't process your payment due to insufficient funds. Please update your payment method to continue your subscription.\n\nPay here: https://rzp.io/rzp/6fT2ulLQ",
+          "sent_at": "2026-08-21T14:03:32.714498"
+        },
+        "payment_simulation": {
+          "success": true,
+          "paid": true,
+          "recovered_amount": 49900,
+          "probability_used": 0.55
+        }
+      },
+      "final_status": "recovered",
+      "is_escalated": false
+    }
+  ]
+}
