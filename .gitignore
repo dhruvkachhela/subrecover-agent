@@ -1,0 +1,13 @@
+venv/
+__pycache__/
+*.py[cod]
+*.sqlite3
+*.db
+.env
+.DS_Store
+.idea/
+.vscode/
+*.log
+db/*.db
+data/*.csv
+!data/generate_batch.py
