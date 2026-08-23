@@ -553,6 +553,8 @@ with tab_runner:
                                     if delay:
                                         col_act1.write(f"**Delay:** `{delay}h`")
                                     if msg:
+                                        if isinstance(obs, dict) and obs.get("payment_link"):
+                                            msg = msg.replace("{payment_link}", obs.get("payment_link"))
                                         col_act2.write(f"**Personalized Message:** _{msg}_")
                                 
                                 if isinstance(obs, dict) and obs.get("payment_link"):

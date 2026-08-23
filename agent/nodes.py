@@ -407,6 +407,9 @@ def act_node(state: AgentState) -> AgentState:
                 payment_link=payment_url
             ) or {}
 
+            if msg_res.get("message") and state.get("current_action_input"):
+                state["current_action_input"]["message_body"] = msg_res.get("message")
+
             # Simulate customer response
             payment_sim = simulate_customer_payment(case_id) or {}
 
