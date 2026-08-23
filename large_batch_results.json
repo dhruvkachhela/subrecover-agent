@@ -1,0 +1,1136 @@
+{
+  "run_at": "2026-08-23T03:50:23.401735",
+  "metrics": {
+    "total_cases_in_db": 101,
+    "total_revenue_at_risk_inr": 156399.0,
+    "recovered_cases": 16,
+    "total_recovered_inr": 14484.0,
+    "recovery_rate_percent": 15.84,
+    "escalated_cases": 27,
+    "still_open": 58,
+    "batch_processed": 20,
+    "batch_recovered": 7,
+    "batch_escalated": 13,
+    "batch_avg_steps": 1.75,
+    "failure_code_breakdown": {
+      "mandate_revoked": 11,
+      "bank_timeout": 11,
+      "invalid_account": 15,
+      "do_not_honor": 17,
+      "soft_decline": 13,
+      "card_expired": 7,
+      "insufficient_funds": 12,
+      "issuer_unavailable": 15
+    }
+  },
+  "results": [
+    {
+      "case_id": "CASE0021",
+      "success": true,
+      "is_recovered": false,
+      "is_escalated": true,
+      "final_status": "escalated",
+      "stop_reason": "Max attempts (4) reached",
+      "steps": 4,
+      "history": [
+        {
+          "step": 1,
+          "thought": "Diagnostic completed",
+          "action": "create_and_send_link",
+          "action_input": {
+            "channel": "whatsapp",
+            "retry_delay_hours": 0,
+            "reason": "",
+            "message_body": "Hi Ayaan, we noticed that your payment for \u20b91499.0 failed due to a bank timeout. Please try again by clicking {payment_link}. We're here to help!"
+          },
+          "observation": {
+            "success": false,
+            "error": "'NoneType' object has no attribute 'get'"
+          },
+          "reflection": "The last action to create and send a link failed due to a 'NoneType' object error, indicating a potential issue with the data being processed."
+        },
+        {
+          "step": 2,
+          "thought": "Diagnostic completed",
+          "action": "create_and_send_link",
+          "action_input": {
+            "channel": "whatsapp",
+            "retry_delay_hours": 0,
+            "reason": "",
+            "message_body": "Hi Ayaan, we noticed that your payment for \u20b91499.0 got stuck due to a bank timeout. Please try again by clicking {payment_link}. We're here to help!"
+          },
+          "observation": {
+            "success": false,
+            "error": "'NoneType' object has no attribute 'get'"
+          },
+          "reflection": "The last action to create and send a payment link failed due to a 'NoneType' object error, indicating a potential issue with the payment object or its retrieval."
+        },
+        {
+          "step": 3,
+          "thought": "Diagnostic completed",
+          "action": "create_and_send_link",
+          "action_input": {
+            "channel": "whatsapp",
+            "retry_delay_hours": 0,
+            "reason": "",
+            "message_body": "Hi Ayaan, we noticed that your payment for \u20b91499.0 failed due to a bank timeout. Please try again at {payment_link}. We're here to help."
+          },
+          "observation": {
+            "success": false,
+            "error": "'NoneType' object has no attribute 'get'"
+          },
+          "reflection": "The last action to create and send a link failed due to a 'NoneType' object error, indicating a potential issue with the data being processed."
+        },
+        {
+          "step": 4,
+          "thought": "Diagnostic completed",
+          "action": "create_and_send_link",
+          "action_input": {
+            "channel": "whatsapp",
+            "retry_delay_hours": 0,
+            "reason": "",
+            "message_body": "Hi Ayaan, we noticed your payment for \u20b91499.0 got stuck. Please try again at {payment_link}. If issues persist, we're here to help."
+          },
+          "observation": {
+            "success": false,
+            "error": "'NoneType' object has no attribute 'get'"
+          },
+          "reflection": "The last action to create and send a payment link failed due to a 'NoneType' object error, indicating a potential issue with the payment object or its attributes."
+        }
+      ],
+      "case_data": {
+        "case_id": "CASE0021",
+        "customer_name": "Ayaan Verma",
+        "customer_phone": "919886951422",
+        "customer_email": "ayaan.verma61@yahoo.com",
+        "amount": 149900,
+        "amount_rupees": 1499.0,
+        "failure_code": "bank_timeout",
+        "failure_description": "Bank did not respond in time",
+        "payment_method": "upi",
+        "previous_attempts": 2,
+        "recovery_attempts": 0,
+        "status": "failed_recoverable",
+        "subscription_id": "sub_0021"
+      }
+    },
+    {
+      "case_id": "CASE0022",
+      "success": true,
+      "is_recovered": false,
+      "is_escalated": true,
+      "final_status": "escalated",
+      "stop_reason": "Escalated by agent",
+      "steps": 1,
+      "history": [
+        {
+          "step": 1,
+          "thought": "Diagnostic completed",
+          "action": "escalate",
+          "action_input": {
+            "channel": "whatsapp",
+            "retry_delay_hours": 0,
+            "reason": "Hard failure detected"
+          },
+          "observation": {
+            "success": true,
+            "action": "escalate",
+            "reason": "Hard failure detected"
+          },
+          "reflection": "Stopping because: Escalated by agent"
+        }
+      ],
+      "case_data": {
+        "case_id": "CASE0022",
+        "customer_name": "Diya Mehta",
+        "customer_phone": "919869003758",
+        "customer_email": "diya.mehta99@gmail.com",
+        "amount": 29900,
+        "amount_rupees": 299.0,
+        "failure_code": "do_not_honor",
+        "failure_description": "Do not honor",
+        "payment_method": "netbanking",
+        "previous_attempts": 0,
+        "recovery_attempts": 0,
+        "status": "failed_recoverable",
+        "subscription_id": "sub_0022"
+      }
+    },
+    {
+      "case_id": "CASE0023",
+      "success": true,
+      "is_recovered": true,
+      "is_escalated": false,
+      "final_status": "recovered",
+      "stop_reason": "Customer paid successfully",
+      "steps": 2,
+      "history": [
+        {
+          "step": 1,
+          "thought": "Diagnostic completed",
+          "action": "create_and_send_link",
+          "action_input": {
+            "channel": "whatsapp",
+            "retry_delay_hours": 0,
+            "reason": "",
+            "message_body": "Hi Pari, we noticed that your payment for \u20b9299.0 was declined. Please try again by clicking {payment_link}."
+          },
+          "observation": {
+            "success": false,
+            "error": "'NoneType' object has no attribute 'get'"
+          },
+          "reflection": "The last action to create and send a link to Pari Gupta for payment recovery failed due to a 'NoneType' object error, indicating a potential issue with the payment method or account information."
+        },
+        {
+          "step": 2,
+          "thought": "Diagnostic completed",
+          "action": "create_and_send_link",
+          "action_input": {
+            "channel": "whatsapp",
+            "retry_delay_hours": 0,
+            "reason": "",
+            "message_body": "Hi Pari, we noticed your payment for \u20b9299.0 was declined. Please try again at {payment_link}. We're here to help."
+          },
+          "observation": {
+            "success": true,
+            "action": "create_and_send_link",
+            "payment_link": "https://rzp.io/rzp/NnL5Hr4K",
+            "message_sent": true,
+            "customer_paid": true,
+            "recovered_amount": 29900
+          },
+          "reflection": "Stopping because: Customer paid successfully"
+        }
+      ],
+      "case_data": {
+        "case_id": "CASE0023",
+        "customer_name": "Pari Gupta",
+        "customer_phone": "919811506335",
+        "customer_email": "pari.gupta38@yahoo.com",
+        "amount": 29900,
+        "amount_rupees": 299.0,
+        "failure_code": "soft_decline",
+        "failure_description": "Temporary decline by issuer",
+        "payment_method": "netbanking",
+        "previous_attempts": 0,
+        "recovery_attempts": 0,
+        "status": "failed_recoverable",
+        "subscription_id": "sub_0023"
+      }
+    },
+    {
+      "case_id": "CASE0024",
+      "success": true,
+      "is_recovered": false,
+      "is_escalated": true,
+      "final_status": "escalated",
+      "stop_reason": "Escalated by agent",
+      "steps": 1,
+      "history": [
+        {
+          "step": 1,
+          "thought": "Diagnostic completed",
+          "action": "escalate",
+          "action_input": {
+            "channel": "whatsapp",
+            "retry_delay_hours": 0,
+            "reason": "Hard failure detected"
+          },
+          "observation": {
+            "success": true,
+            "action": "escalate",
+            "reason": "Hard failure detected"
+          },
+          "reflection": "Stopping because: Escalated by agent"
+        }
+      ],
+      "case_data": {
+        "case_id": "CASE0024",
+        "customer_name": "Sai Reddy",
+        "customer_phone": "919838380710",
+        "customer_email": "sai.reddy55@yahoo.com",
+        "amount": 49900,
+        "amount_rupees": 499.0,
+        "failure_code": "invalid_account",
+        "failure_description": "Invalid account details",
+        "payment_method": "netbanking",
+        "previous_attempts": 1,
+        "recovery_attempts": 0,
+        "status": "failed_recoverable",
+        "subscription_id": "sub_0024"
+      }
+    },
+    {
+      "case_id": "CASE0025",
+      "success": true,
+      "is_recovered": false,
+      "is_escalated": true,
+      "final_status": "escalated",
+      "stop_reason": "Max attempts (4) reached",
+      "steps": 4,
+      "history": [
+        {
+          "step": 1,
+          "thought": "Diagnostic completed",
+          "action": "create_and_send_link",
+          "action_input": {
+            "channel": "whatsapp",
+            "retry_delay_hours": 0,
+            "reason": "",
+            "message_body": "Hi Sai, we noticed that your payment for \u20b9299.0 failed due to your issuer being unavailable. Please try again at {payment_link}."
+          },
+          "observation": {
+            "success": false,
+            "error": "'NoneType' object has no attribute 'get'"
+          },
+          "reflection": "Diagnostic completed, but create_and_send_link failed due to 'NoneType' object error, indicating a potential issue with the payment link creation process."
+        },
+        {
+          "step": 2,
+          "thought": "Diagnostic completed",
+          "action": "create_and_send_link",
+          "action_input": {
+            "channel": "whatsapp",
+            "retry_delay_hours": 0,
+            "reason": "",
+            "message_body": "Hi Sai, we noticed that your payment for \u20b9299.0 failed due to your issuer being unavailable. Please try again at {payment_link}."
+          },
+          "observation": {
+            "success": false,
+            "error": "'NoneType' object has no attribute 'get'"
+          },
+          "reflection": "The diagnostic process has been completed, but the create_and_send_link action failed due to a 'NoneType' object error. This suggests a potential issue with the payment data or the link creation process."
+        },
+        {
+          "step": 3,
+          "thought": "Diagnostic completed",
+          "action": "create_and_send_link",
+          "action_input": {
+            "channel": "whatsapp",
+            "retry_delay_hours": 0,
+            "reason": "",
+            "message_body": "Hi Sai, we noticed your payment for \u20b9299.0 failed due to an issuer unavailable issue. Please try again by clicking {payment_link}."
+          },
+          "observation": {
+            "success": false,
+            "error": "'NoneType' object has no attribute 'get'"
+          },
+          "reflection": "The diagnostic completed successfully, but creating and sending the link resulted in a 'NoneType' object error, indicating a potential issue with the payment link generation or the issuer's availability."
+        },
+        {
+          "step": 4,
+          "thought": "Diagnostic completed",
+          "action": "create_and_send_link",
+          "action_input": {
+            "channel": "whatsapp",
+            "retry_delay_hours": 0,
+            "reason": "",
+            "message_body": "Hi Sai, we noticed that your payment for \u20b9299.0 failed due to your issuer being unavailable. Please try again at {payment_link}."
+          },
+          "observation": {
+            "success": false,
+            "error": "'NoneType' object has no attribute 'get'"
+          },
+          "reflection": "The diagnostic completed successfully, but creating and sending the link resulted in an error due to an issuer being unavailable. The error suggests a NoneType object, which might be related to the issuer_unavailable issue."
+        }
+      ],
+      "case_data": {
+        "case_id": "CASE0025",
+        "customer_name": "Sai Singh",
+        "customer_phone": "919893685178",
+        "customer_email": "sai.singh40@outlook.com",
+        "amount": 29900,
+        "amount_rupees": 299.0,
+        "failure_code": "issuer_unavailable",
+        "failure_description": "Issuer system temporarily unavailable",
+        "payment_method": "card",
+        "previous_attempts": 2,
+        "recovery_attempts": 0,
+        "status": "failed_recoverable",
+        "subscription_id": "sub_0025"
+      }
+    },
+    {
+      "case_id": "CASE0026",
+      "success": true,
+      "is_recovered": true,
+      "is_escalated": false,
+      "final_status": "recovered",
+      "stop_reason": "Customer paid successfully",
+      "steps": 1,
+      "history": [
+        {
+          "step": 1,
+          "thought": "Diagnostic completed",
+          "action": "create_and_send_link",
+          "action_input": {
+            "channel": "whatsapp",
+            "retry_delay_hours": 0,
+            "reason": "",
+            "message_body": "Hi Myra, we noticed your payment for \u20b9999 failed due to your issuer being unavailable. Please try again {payment_link}."
+          },
+          "observation": {
+            "success": true,
+            "action": "create_and_send_link",
+            "payment_link": "https://rzp.io/rzp/rjhjisw1",
+            "message_sent": true,
+            "customer_paid": true,
+            "recovered_amount": 99900
+          },
+          "reflection": "Stopping because: Customer paid successfully"
+        }
+      ],
+      "case_data": {
+        "case_id": "CASE0026",
+        "customer_name": "Myra Joshi",
+        "customer_phone": "919882481956",
+        "customer_email": "myra.joshi42@gmail.com",
+        "amount": 99900,
+        "amount_rupees": 999.0,
+        "failure_code": "issuer_unavailable",
+        "failure_description": "Issuer system temporarily unavailable",
+        "payment_method": "upi",
+        "previous_attempts": 0,
+        "recovery_attempts": 0,
+        "status": "failed_recoverable",
+        "subscription_id": "sub_0026"
+      }
+    },
+    {
+      "case_id": "CASE0027",
+      "success": true,
+      "is_recovered": true,
+      "is_escalated": false,
+      "final_status": "recovered",
+      "stop_reason": "Customer paid successfully",
+      "steps": 1,
+      "history": [
+        {
+          "step": 1,
+          "thought": "Diagnostic completed",
+          "action": "create_and_send_link",
+          "action_input": {
+            "channel": "whatsapp",
+            "retry_delay_hours": 0,
+            "reason": "",
+            "message_body": "Hi Ayaan, we noticed your payment for \u20b91499.0 got stuck. Please try again at {payment_link}. We're here to help!"
+          },
+          "observation": {
+            "success": true,
+            "action": "create_and_send_link",
+            "payment_link": "https://rzp.io/rzp/UvfKJAlr",
+            "message_sent": true,
+            "customer_paid": true,
+            "recovered_amount": 149900
+          },
+          "reflection": "Stopping because: Customer paid successfully"
+        }
+      ],
+      "case_data": {
+        "case_id": "CASE0027",
+        "customer_name": "Ayaan Joshi",
+        "customer_phone": "919811849450",
+        "customer_email": "ayaan.joshi54@hotmail.com",
+        "amount": 149900,
+        "amount_rupees": 1499.0,
+        "failure_code": "bank_timeout",
+        "failure_description": "Bank did not respond in time",
+        "payment_method": "upi",
+        "previous_attempts": 2,
+        "recovery_attempts": 0,
+        "status": "failed_recoverable",
+        "subscription_id": "sub_0027"
+      }
+    },
+    {
+      "case_id": "CASE0028",
+      "success": true,
+      "is_recovered": false,
+      "is_escalated": true,
+      "final_status": "escalated",
+      "stop_reason": "Escalated by agent",
+      "steps": 1,
+      "history": [
+        {
+          "step": 1,
+          "thought": "Diagnostic completed",
+          "action": "escalate",
+          "action_input": {
+            "channel": "whatsapp",
+            "retry_delay_hours": 0,
+            "reason": "Hard failure detected"
+          },
+          "observation": {
+            "success": true,
+            "action": "escalate",
+            "reason": "Hard failure detected"
+          },
+          "reflection": "Stopping because: Escalated by agent"
+        }
+      ],
+      "case_data": {
+        "case_id": "CASE0028",
+        "customer_name": "Ishaan Gupta",
+        "customer_phone": "919862873757",
+        "customer_email": "ishaan.gupta74@hotmail.com",
+        "amount": 99900,
+        "amount_rupees": 999.0,
+        "failure_code": "do_not_honor",
+        "failure_description": "Do not honor",
+        "payment_method": "card",
+        "previous_attempts": 1,
+        "recovery_attempts": 0,
+        "status": "failed_recoverable",
+        "subscription_id": "sub_0028"
+      }
+    },
+    {
+      "case_id": "CASE0029",
+      "success": true,
+      "is_recovered": true,
+      "is_escalated": false,
+      "final_status": "recovered",
+      "stop_reason": "Customer paid successfully",
+      "steps": 1,
+      "history": [
+        {
+          "step": 1,
+          "thought": "Diagnostic completed",
+          "action": "create_and_send_link",
+          "action_input": {
+            "channel": "whatsapp",
+            "retry_delay_hours": 0,
+            "reason": "",
+            "message_body": "Hi Krishna, we noticed that your payment for \u20b92499.0 failed due to your issuer being unavailable. Please try again at {payment_link}. If you need help, just reply!"
+          },
+          "observation": {
+            "success": true,
+            "action": "create_and_send_link",
+            "payment_link": "https://rzp.io/rzp/Gaqw2qop",
+            "message_sent": true,
+            "customer_paid": true,
+            "recovered_amount": 249900
+          },
+          "reflection": "Stopping because: Customer paid successfully"
+        }
+      ],
+      "case_data": {
+        "case_id": "CASE0029",
+        "customer_name": "Krishna Verma",
+        "customer_phone": "919829836715",
+        "customer_email": "krishna.verma25@outlook.com",
+        "amount": 249900,
+        "amount_rupees": 2499.0,
+        "failure_code": "issuer_unavailable",
+        "failure_description": "Issuer system temporarily unavailable",
+        "payment_method": "upi",
+        "previous_attempts": 1,
+        "recovery_attempts": 0,
+        "status": "failed_recoverable",
+        "subscription_id": "sub_0029"
+      }
+    },
+    {
+      "case_id": "CASE0030",
+      "success": true,
+      "is_recovered": false,
+      "is_escalated": true,
+      "final_status": "escalated",
+      "stop_reason": "Escalated by agent",
+      "steps": 1,
+      "history": [
+        {
+          "step": 1,
+          "thought": "Diagnostic completed",
+          "action": "escalate",
+          "action_input": {
+            "channel": "whatsapp",
+            "retry_delay_hours": 0,
+            "reason": "Hard failure detected"
+          },
+          "observation": {
+            "success": true,
+            "action": "escalate",
+            "reason": "Hard failure detected"
+          },
+          "reflection": "Stopping because: Escalated by agent"
+        }
+      ],
+      "case_data": {
+        "case_id": "CASE0030",
+        "customer_name": "Krishna Singh",
+        "customer_phone": "919891276047",
+        "customer_email": "krishna.singh84@gmail.com",
+        "amount": 99900,
+        "amount_rupees": 999.0,
+        "failure_code": "mandate_revoked",
+        "failure_description": "Customer revoked the mandate",
+        "payment_method": "netbanking",
+        "previous_attempts": 1,
+        "recovery_attempts": 0,
+        "status": "failed_recoverable",
+        "subscription_id": "sub_0030"
+      }
+    },
+    {
+      "case_id": "CASE0031",
+      "success": true,
+      "is_recovered": true,
+      "is_escalated": false,
+      "final_status": "recovered",
+      "stop_reason": "Customer paid successfully",
+      "steps": 1,
+      "history": [
+        {
+          "step": 1,
+          "thought": "Diagnostic completed",
+          "action": "create_and_send_link",
+          "action_input": {
+            "channel": "whatsapp",
+            "retry_delay_hours": 0,
+            "reason": "",
+            "message_body": "Hi Kiara, we noticed your payment for \u20b9199.0 failed due to your issuer being unavailable. Please try again at {payment_link}. We're here to help!"
+          },
+          "observation": {
+            "success": true,
+            "action": "create_and_send_link",
+            "payment_link": "https://rzp.io/rzp/TmJGeAX",
+            "message_sent": true,
+            "customer_paid": true,
+            "recovered_amount": 19900
+          },
+          "reflection": "Stopping because: Customer paid successfully"
+        }
+      ],
+      "case_data": {
+        "case_id": "CASE0031",
+        "customer_name": "Kiara Singh",
+        "customer_phone": "919896128230",
+        "customer_email": "kiara.singh93@hotmail.com",
+        "amount": 19900,
+        "amount_rupees": 199.0,
+        "failure_code": "issuer_unavailable",
+        "failure_description": "Issuer system temporarily unavailable",
+        "payment_method": "netbanking",
+        "previous_attempts": 2,
+        "recovery_attempts": 0,
+        "status": "failed_recoverable",
+        "subscription_id": "sub_0031"
+      }
+    },
+    {
+      "case_id": "CASE0032",
+      "success": true,
+      "is_recovered": true,
+      "is_escalated": false,
+      "final_status": "recovered",
+      "stop_reason": "Customer paid successfully",
+      "steps": 1,
+      "history": [
+        {
+          "step": 1,
+          "thought": "Diagnostic completed",
+          "action": "create_and_send_link",
+          "action_input": {
+            "channel": "whatsapp",
+            "retry_delay_hours": 0,
+            "reason": "",
+            "message_body": "Hi Ayaan, we noticed that your payment for \u20b9199.0 failed due to your issuer being unavailable. Please try again at {payment_link}. We're here to help!"
+          },
+          "observation": {
+            "success": true,
+            "action": "create_and_send_link",
+            "payment_link": "https://rzp.io/rzp/mT70XPd",
+            "message_sent": true,
+            "customer_paid": true,
+            "recovered_amount": 19900
+          },
+          "reflection": "Stopping because: Customer paid successfully"
+        }
+      ],
+      "case_data": {
+        "case_id": "CASE0032",
+        "customer_name": "Ayaan Joshi",
+        "customer_phone": "919840756022",
+        "customer_email": "ayaan.joshi50@gmail.com",
+        "amount": 19900,
+        "amount_rupees": 199.0,
+        "failure_code": "issuer_unavailable",
+        "failure_description": "Issuer system temporarily unavailable",
+        "payment_method": "netbanking",
+        "previous_attempts": 2,
+        "recovery_attempts": 0,
+        "status": "failed_recoverable",
+        "subscription_id": "sub_0032"
+      }
+    },
+    {
+      "case_id": "CASE0033",
+      "success": true,
+      "is_recovered": false,
+      "is_escalated": true,
+      "final_status": "escalated",
+      "stop_reason": "Max attempts (4) reached",
+      "steps": 4,
+      "history": [
+        {
+          "step": 1,
+          "thought": "Diagnostic completed",
+          "action": "create_and_send_link",
+          "action_input": {
+            "channel": "whatsapp",
+            "retry_delay_hours": 0,
+            "reason": "",
+            "message_body": "Hi Prisha, we noticed that your payment for \u20b92499.0 failed due to insufficient funds. Please try again with a valid payment method at {payment_link}."
+          },
+          "observation": {
+            "success": false,
+            "error": "'NoneType' object has no attribute 'get'"
+          },
+          "reflection": "The diagnostic was completed, but the create_and_send_link action failed due to a 'NoneType' object error, indicating a potential issue with the payment data or the link creation process."
+        },
+        {
+          "step": 2,
+          "thought": "Diagnostic completed",
+          "action": "create_and_send_link",
+          "action_input": {
+            "channel": "whatsapp",
+            "retry_delay_hours": 0,
+            "reason": "",
+            "message_body": "Hi Prisha, we noticed that your payment for \u20b92499.0 failed due to insufficient funds. Please try again with a valid payment method at {payment_link}."
+          },
+          "observation": {
+            "success": false,
+            "error": "'NoneType' object has no attribute 'get'"
+          },
+          "reflection": "The diagnostic completed successfully, but the last action to create and send a link resulted in an error due to a 'NoneType' object not having a 'get' attribute. This indicates a potential issue with the payment link creation process."
+        },
+        {
+          "step": 3,
+          "thought": "Diagnostic completed",
+          "action": "create_and_send_link",
+          "action_input": {
+            "channel": "whatsapp",
+            "retry_delay_hours": 0,
+            "reason": "",
+            "message_body": "Hi Prisha, we noticed that your payment for \u20b92499 failed due to insufficient funds. Please try again by clicking {payment_link}. We're here to help!"
+          },
+          "observation": {
+            "success": false,
+            "error": "'NoneType' object has no attribute 'get'"
+          },
+          "reflection": "The last action to create and send a payment link failed due to a 'NoneType' object error, indicating a potential issue with the payment object or its retrieval."
+        },
+        {
+          "step": 4,
+          "thought": "Diagnostic completed",
+          "action": "create_and_send_link",
+          "action_input": {
+            "channel": "whatsapp",
+            "retry_delay_hours": 0,
+            "reason": "",
+            "message_body": "Hi Prisha, we noticed that your payment for \u20b92499.0 failed due to insufficient funds. Please try again with a valid payment method at {payment_link}."
+          },
+          "observation": {
+            "success": false,
+            "error": "'NoneType' object has no attribute 'get'"
+          },
+          "reflection": "The last action to create and send a link failed due to a 'NoneType' object error, indicating a potential issue with the payment data or the link creation process."
+        }
+      ],
+      "case_data": {
+        "case_id": "CASE0033",
+        "customer_name": "Prisha Nair",
+        "customer_phone": "919812591859",
+        "customer_email": "prisha.nair30@outlook.com",
+        "amount": 249900,
+        "amount_rupees": 2499.0,
+        "failure_code": "insufficient_funds",
+        "failure_description": "Insufficient funds in account",
+        "payment_method": "upi",
+        "previous_attempts": 0,
+        "recovery_attempts": 0,
+        "status": "failed_recoverable",
+        "subscription_id": "sub_0033"
+      }
+    },
+    {
+      "case_id": "CASE0034",
+      "success": true,
+      "is_recovered": true,
+      "is_escalated": false,
+      "final_status": "recovered",
+      "stop_reason": "Customer paid successfully",
+      "steps": 3,
+      "history": [
+        {
+          "step": 1,
+          "thought": "Diagnostic completed",
+          "action": "create_and_send_link",
+          "action_input": {
+            "channel": "whatsapp",
+            "retry_delay_hours": 0,
+            "reason": "",
+            "message_body": "Hi Aadhya, we noticed that your payment for \u20b9499.0 failed due to your issuer being unavailable. Please try again at {payment_link}. If you need help, feel free to reply!"
+          },
+          "observation": {
+            "success": false,
+            "error": "'NoneType' object has no attribute 'get'"
+          },
+          "reflection": "The last action to create and send a payment link failed due to a 'NoneType' object error, indicating a potential issue with the payment method or system. The diagnostic has been completed, but the error persists."
+        },
+        {
+          "step": 2,
+          "thought": "Diagnostic completed",
+          "action": "create_and_send_link",
+          "action_input": {
+            "channel": "whatsapp",
+            "retry_delay_hours": 0,
+            "reason": "",
+            "message_body": "Hi Aadhya, we're sorry to hear that your payment failed. Please try again with the same card. You can retry here: {payment_link}."
+          },
+          "observation": {
+            "success": false,
+            "error": "'NoneType' object has no attribute 'get'"
+          },
+          "reflection": "The last action to create and send a link resulted in a failure due to a 'NoneType' object error, indicating a potential issue with the payment data or the link creation process."
+        },
+        {
+          "step": 3,
+          "thought": "Diagnostic completed",
+          "action": "create_and_send_link",
+          "action_input": {
+            "channel": "whatsapp",
+            "retry_delay_hours": 0,
+            "reason": "",
+            "message_body": "Hi Aadhya, we noticed that your payment for \u20b9499.0 failed due to your issuer being unavailable. Please try again at {payment_link}. We're here to help if you need assistance."
+          },
+          "observation": {
+            "success": true,
+            "action": "create_and_send_link",
+            "payment_link": "https://rzp.io/rzp/aX3BovlN",
+            "message_sent": true,
+            "customer_paid": true,
+            "recovered_amount": 49900
+          },
+          "reflection": "Stopping because: Customer paid successfully"
+        }
+      ],
+      "case_data": {
+        "case_id": "CASE0034",
+        "customer_name": "Aadhya Reddy",
+        "customer_phone": "919826235551",
+        "customer_email": "aadhya.reddy13@gmail.com",
+        "amount": 49900,
+        "amount_rupees": 499.0,
+        "failure_code": "issuer_unavailable",
+        "failure_description": "Issuer system temporarily unavailable",
+        "payment_method": "card",
+        "previous_attempts": 1,
+        "recovery_attempts": 0,
+        "status": "failed_recoverable",
+        "subscription_id": "sub_0034"
+      }
+    },
+    {
+      "case_id": "CASE0035",
+      "success": true,
+      "is_recovered": false,
+      "is_escalated": true,
+      "final_status": "escalated",
+      "stop_reason": "Escalated by agent",
+      "steps": 1,
+      "history": [
+        {
+          "step": 1,
+          "thought": "Diagnostic completed",
+          "action": "escalate",
+          "action_input": {
+            "channel": "whatsapp",
+            "retry_delay_hours": 0,
+            "reason": "Hard failure detected"
+          },
+          "observation": {
+            "success": true,
+            "action": "escalate",
+            "reason": "Hard failure detected"
+          },
+          "reflection": "Stopping because: Escalated by agent"
+        }
+      ],
+      "case_data": {
+        "case_id": "CASE0035",
+        "customer_name": "Aadhya Nair",
+        "customer_phone": "919868475301",
+        "customer_email": "aadhya.nair71@yahoo.com",
+        "amount": 499900,
+        "amount_rupees": 4999.0,
+        "failure_code": "invalid_account",
+        "failure_description": "Invalid account details",
+        "payment_method": "upi",
+        "previous_attempts": 2,
+        "recovery_attempts": 0,
+        "status": "failed_recoverable",
+        "subscription_id": "sub_0035"
+      }
+    },
+    {
+      "case_id": "CASE0036",
+      "success": true,
+      "is_recovered": false,
+      "is_escalated": true,
+      "final_status": "escalated",
+      "stop_reason": "Max attempts (4) reached",
+      "steps": 4,
+      "history": [
+        {
+          "step": 1,
+          "thought": "Diagnostic completed",
+          "action": "create_and_send_link",
+          "action_input": {
+            "channel": "whatsapp",
+            "retry_delay_hours": 0,
+            "reason": "",
+            "message_body": "Hi Kiara, your subscription payment of \u20b91499.0 could not be processed. Please complete it securely here: {payment_link}"
+          },
+          "observation": {
+            "success": false,
+            "error": "'NoneType' object has no attribute 'get'"
+          },
+          "reflection": "Diagnostic completed but create_and_send_link failed due to 'NoneType' object error, indicating a potential issue with the payment data or the issuer's availability."
+        },
+        {
+          "step": 2,
+          "thought": "Diagnostic completed",
+          "action": "create_and_send_link",
+          "action_input": {
+            "channel": "whatsapp",
+            "retry_delay_hours": 0,
+            "reason": "",
+            "message_body": "Hi Kiara, we noticed that your payment for \u20b91499.0 failed due to your issuer being unavailable. Please try again at {payment_link}. We're here to help!"
+          },
+          "observation": {
+            "success": false,
+            "error": "'NoneType' object has no attribute 'get'"
+          },
+          "reflection": "Diagnostic completed, but create_and_send_link failed due to 'NoneType' object error, indicating a potential issue with the issuer's response or internal data structure."
+        },
+        {
+          "step": 3,
+          "thought": "Diagnostic completed",
+          "action": "create_and_send_link",
+          "action_input": {
+            "channel": "whatsapp",
+            "retry_delay_hours": 0,
+            "reason": "",
+            "message_body": "Hi Kiara, your subscription payment of \u20b91499.0 could not be processed. Please complete it securely here: {payment_link}"
+          },
+          "observation": {
+            "success": false,
+            "error": "'NoneType' object has no attribute 'get'"
+          },
+          "reflection": "Diagnostic completed but create_and_send_link failed due to 'NoneType' object error, indicating a potential issue with the payment link creation or issuer availability."
+        },
+        {
+          "step": 4,
+          "thought": "Diagnostic completed",
+          "action": "create_and_send_link",
+          "action_input": {
+            "channel": "whatsapp",
+            "retry_delay_hours": 0,
+            "reason": "",
+            "message_body": "Hi Kiara, we noticed that your payment for \u20b91499.0 failed due to an issue with your issuer. Please try again by clicking {payment_link}. We're here to help!"
+          },
+          "observation": {
+            "success": false,
+            "error": "'NoneType' object has no attribute 'get'"
+          },
+          "reflection": "Diagnostic completed but create_and_send_link failed due to 'NoneType' object error, indicating a potential issue with the payment link creation or issuer availability."
+        }
+      ],
+      "case_data": {
+        "case_id": "CASE0036",
+        "customer_name": "Kiara Patel",
+        "customer_phone": "919839832925",
+        "customer_email": "kiara.patel28@yahoo.com",
+        "amount": 149900,
+        "amount_rupees": 1499.0,
+        "failure_code": "issuer_unavailable",
+        "failure_description": "Issuer system temporarily unavailable",
+        "payment_method": "upi",
+        "previous_attempts": 2,
+        "recovery_attempts": 0,
+        "status": "failed_recoverable",
+        "subscription_id": "sub_0036"
+      }
+    },
+    {
+      "case_id": "CASE0037",
+      "success": true,
+      "is_recovered": false,
+      "is_escalated": true,
+      "final_status": "escalated",
+      "stop_reason": "Escalated by agent",
+      "steps": 1,
+      "history": [
+        {
+          "step": 1,
+          "thought": "Diagnostic completed",
+          "action": "escalate",
+          "action_input": {
+            "channel": "whatsapp",
+            "retry_delay_hours": 0,
+            "reason": "Hard failure detected"
+          },
+          "observation": {
+            "success": true,
+            "action": "escalate",
+            "reason": "Hard failure detected"
+          },
+          "reflection": "Stopping because: Escalated by agent"
+        }
+      ],
+      "case_data": {
+        "case_id": "CASE0037",
+        "customer_name": "Navya Mehta",
+        "customer_phone": "919878994433",
+        "customer_email": "navya.mehta76@gmail.com",
+        "amount": 199900,
+        "amount_rupees": 1999.0,
+        "failure_code": "invalid_account",
+        "failure_description": "Invalid account details",
+        "payment_method": "upi",
+        "previous_attempts": 1,
+        "recovery_attempts": 0,
+        "status": "failed_recoverable",
+        "subscription_id": "sub_0037"
+      }
+    },
+    {
+      "case_id": "CASE0038",
+      "success": true,
+      "is_recovered": false,
+      "is_escalated": true,
+      "final_status": "escalated",
+      "stop_reason": "Escalated by agent",
+      "steps": 1,
+      "history": [
+        {
+          "step": 1,
+          "thought": "Diagnostic completed",
+          "action": "escalate",
+          "action_input": {
+            "channel": "whatsapp",
+            "retry_delay_hours": 0,
+            "reason": "Hard failure detected"
+          },
+          "observation": {
+            "success": true,
+            "action": "escalate",
+            "reason": "Hard failure detected"
+          },
+          "reflection": "Stopping because: Escalated by agent"
+        }
+      ],
+      "case_data": {
+        "case_id": "CASE0038",
+        "customer_name": "Vihaan Joshi",
+        "customer_phone": "919831228252",
+        "customer_email": "vihaan.joshi64@hotmail.com",
+        "amount": 99900,
+        "amount_rupees": 999.0,
+        "failure_code": "card_expired",
+        "failure_description": "Card has expired",
+        "payment_method": "upi",
+        "previous_attempts": 2,
+        "recovery_attempts": 0,
+        "status": "failed_recoverable",
+        "subscription_id": "sub_0038"
+      }
+    },
+    {
+      "case_id": "CASE0039",
+      "success": true,
+      "is_recovered": false,
+      "is_escalated": true,
+      "final_status": "escalated",
+      "stop_reason": "Escalated by agent",
+      "steps": 1,
+      "history": [
+        {
+          "step": 1,
+          "thought": "Diagnostic completed",
+          "action": "escalate",
+          "action_input": {
+            "channel": "whatsapp",
+            "retry_delay_hours": 0,
+            "reason": "Hard failure detected"
+          },
+          "observation": {
+            "success": true,
+            "action": "escalate",
+            "reason": "Hard failure detected"
+          },
+          "reflection": "Stopping because: Escalated by agent"
+        }
+      ],
+      "case_data": {
+        "case_id": "CASE0039",
+        "customer_name": "Ananya Verma",
+        "customer_phone": "919818415894",
+        "customer_email": "ananya.verma73@gmail.com",
+        "amount": 149900,
+        "amount_rupees": 1499.0,
+        "failure_code": "invalid_account",
+        "failure_description": "Invalid account details",
+        "payment_method": "netbanking",
+        "previous_attempts": 1,
+        "recovery_attempts": 0,
+        "status": "failed_recoverable",
+        "subscription_id": "sub_0039"
+      }
+    },
+    {
+      "case_id": "CASE0040",
+      "success": true,
+      "is_recovered": false,
+      "is_escalated": true,
+      "final_status": "escalated",
+      "stop_reason": "Escalated by agent",
+      "steps": 1,
+      "history": [
+        {
+          "step": 1,
+          "thought": "Diagnostic completed",
+          "action": "escalate",
+          "action_input": {
+            "channel": "whatsapp",
+            "retry_delay_hours": 0,
+            "reason": "Hard failure detected"
+          },
+          "observation": {
+            "success": true,
+            "action": "escalate",
+            "reason": "Hard failure detected"
+          },
+          "reflection": "Stopping because: Escalated by agent"
+        }
+      ],
+      "case_data": {
+        "case_id": "CASE0040",
+        "customer_name": "Pari Reddy",
+        "customer_phone": "919894510149",
+        "customer_email": "pari.reddy93@outlook.com",
+        "amount": 149900,
+        "amount_rupees": 1499.0,
+        "failure_code": "do_not_honor",
+        "failure_description": "Do not honor",
+        "payment_method": "netbanking",
+        "previous_attempts": 2,
+        "recovery_attempts": 0,
+        "status": "failed_recoverable",
+        "subscription_id": "sub_0040"
+      }
+    }
+  ]
+}

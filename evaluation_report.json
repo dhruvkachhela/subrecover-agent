@@ -1,0 +1,39 @@
+{
+  "evaluation": {
+    "total_processed": 20,
+    "recovered": 7,
+    "escalated": 13,
+    "errors": 0,
+    "recovery_rate_batch": 35.0,
+    "hard_failures": 9,
+    "hard_early_escalation_rate": 100.0,
+    "soft_failures": 11,
+    "soft_adaptive_rate": 54.5,
+    "repeated_action_cases": 6,
+    "max_steps_violations": 0,
+    "audit_incomplete_cases": 0
+  },
+  "metrics": {
+    "total_cases_in_db": 101,
+    "total_revenue_at_risk_inr": 156399.0,
+    "recovered_cases": 16,
+    "total_recovered_inr": 14484.0,
+    "recovery_rate_percent": 15.84,
+    "escalated_cases": 27,
+    "still_open": 58,
+    "batch_processed": 20,
+    "batch_recovered": 7,
+    "batch_escalated": 13,
+    "batch_avg_steps": 1.75,
+    "failure_code_breakdown": {
+      "mandate_revoked": 11,
+      "bank_timeout": 11,
+      "invalid_account": 15,
+      "do_not_honor": 17,
+      "soft_decline": 13,
+      "card_expired": 7,
+      "insufficient_funds": 12,
+      "issuer_unavailable": 15
+    }
+  }
+}

@@ -1,51 +1,43 @@
-# How this works:
-# Defines the AgentState TypedDict schema for the LangGraph workflow.
-# It holds the case identification, fetched case data, diagnosis, decision,
-# tool execution output, stopping flags, and chat message trails.
-
 from typing import TypedDict, Optional, List, Dict, Any, Annotated
 from langgraph.graph.message import add_messages
+from datetime import datetime
 
 class AgentState(TypedDict):
-    """
-    State schema definition for the subscription recovery LangGraph agent.
-    
-    Fields:
-        case_id: The unique identifier of the transaction case.
-        case_data: Dictionary of loaded case details from the database.
-        diagnosis: Structured JSON diagnosis output from the LLM.
-        decision: Structured JSON decision output from the LLM.
-        execution_result: Results from calling tools (e.g., payment link creation).
-        should_stop: Boolean flag indicating if workflow should terminate.
-        stop_reason: Text description explaining why execution stopped.
-        is_recovered: Flag indicating successful payment recovery.
-        is_escalated: Flag indicating manual human escalation.
-        messages: LangGraph message list with reducer for reasoning trails.
-        final_status: Summary status string of the workflow execution.
-    """
-    # Case identification
+    # === Case Identification ===
     case_id: str
-    
-    # Current case data (will be loaded)
+
+    # === Current Case Snapshot ===
     case_data: Optional[Dict[str, Any]]
-    
-    # Diagnosis result from LLM
+
+    # === Agent Memory (very important for multi-step reasoning) ===
+    history: List[Dict[str, Any]]          # list of previous steps
+    # Each item in history will look like:
+    # {
+    #   "step": 1,
+    #   "thought": "...",
+    #   "action": "...",
+    #   "action_input": {...},
+    #   "observation": {...},
+    #   "reflection": "..."
+    # }
+
+    # === Current Step Data & Cognitive Sub-States ===
+    current_thought: Optional[str]
+    current_action: Optional[str]
+    current_action_input: Optional[Dict[str, Any]]
+    current_observation: Optional[Dict[str, Any]]
+    current_reflection: Optional[str]
     diagnosis: Optional[Dict[str, Any]]
-    
-    # Decision from LLM
-    decision: Optional[Dict[str, Any]]
-    
-    # Execution results
-    execution_result: Optional[Dict[str, Any]]
-    
-    # Control flags
+    message_payload: Optional[Dict[str, Any]]
+
+    # === Control Flags ===
+    step_count: int
+    max_steps: int
     should_stop: bool
     stop_reason: Optional[str]
     is_recovered: bool
     is_escalated: bool
-    
-    # Messages / reasoning trail (optional but useful)
-    messages: Annotated[List[Any], add_messages]
-    
-    # Final status for this run
     final_status: Optional[str]
+
+    # === Optional messages for LangGraph compatibility ===
+    messages: Annotated[List[Any], add_messages]

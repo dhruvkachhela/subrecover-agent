@@ -1,14 +1,6 @@
-# How this works:
-# Defines the individual functional nodes in the LangGraph workflow:
-# 1. load_case_node: Loads case records from SQLite database into AgentState.
-# 2. diagnose_node: Prompts NVIDIA NIM LLM to determine root cause and recoverability.
-# 3. decide_intervention_node: Prompts LLM to select channel, message body, and action.
-# 4. execute_node: Calls deterministic tools (Razorpay link, message dispatch, retry schedule).
-# 5. check_stop_node: Evaluates safety stopping boundaries and escalates if max limits exceeded.
-
 import json
 from datetime import datetime
-from typing import Dict, Any
+from typing import Dict, Any, List
 from langchain_nvidia_ai_endpoints import ChatNVIDIA
 from langchain_core.messages import SystemMessage, HumanMessage
 from app.config import config
@@ -16,27 +8,37 @@ from agent.tools import (
     get_case, update_case, log_audit,
     create_payment_link, send_message,
     mark_recovered, escalate_case,
-    schedule_retry, check_stopping_rules
+    schedule_retry, check_stopping_rules,
+    simulate_customer_payment, check_gateway_reconciliation
 )
 from agent.state import AgentState
 
-# Initialize LLM (NVIDIA NIM)
+# Initialize LLM
 llm = ChatNVIDIA(
     model=config.NVIDIA_MODEL,
     api_key=config.NVIDIA_API_KEY,
-    temperature=0.3
+    temperature=0.2
 )
 
+# ====================== HELPER ======================
+
+def safe_json_parse(text: str) -> dict:
+    """Clean and parse JSON from LLM response"""
+    text = text.strip()
+    if text.startswith("```"):
+        text = text.split("```")[1]
+        if text.startswith("json"):
+            text = text[4:]
+    text = text.strip()
+    try:
+        return json.loads(text)
+    except:
+        return {}
+
+# ====================== NODES ======================
+
 def load_case_node(state: AgentState) -> AgentState:
-    """
-    Load case details from the SQLite database into the agent state.
-    
-    Parameters:
-        state (AgentState): Current graph state containing case_id.
-        
-    Returns:
-        AgentState: Updated state populated with case_data dictionary.
-    """
+    """Load case data and initialize agent memory"""
     case = get_case(state["case_id"])
     if not case:
         state["should_stop"] = True
@@ -44,13 +46,61 @@ def load_case_node(state: AgentState) -> AgentState:
         state["final_status"] = "error"
         return state
 
+    # ========== OUT-OF-BAND PAYMENT RECONCILIATION ==========
+    reconciliation = check_gateway_reconciliation(state["case_id"])
+    if reconciliation.get("is_reconciled"):
+        state["case_data"] = {
+            "case_id": case.case_id,
+            "customer_name": case.customer_name,
+            "amount_rupees": round(case.amount / 100, 2),
+            "failure_code": case.failure_code,
+            "status": "recovered",
+        }
+        state["should_stop"] = True
+        state["stop_reason"] = f"Payment reconciled out-of-band ({reconciliation.get('source', 'external')})"
+        state["final_status"] = "recovered"
+        state["is_recovered"] = True
+        state["is_escalated"] = False
+        state["history"] = []
+        state["step_count"] = 0
+        state["max_steps"] = 5
+        return state
+
+    # ========== HARD EARLY EXIT ==========
+    if case.status in ["recovered", "escalated", "closed"]:
+        state["case_data"] = {
+            "case_id": case.case_id,
+            "customer_name": case.customer_name,
+            "amount_rupees": round(case.amount / 100, 2),
+            "failure_code": case.failure_code,
+            "status": case.status,
+        }
+        state["should_stop"] = True
+        state["stop_reason"] = f"Case already in final status: {case.status}"
+        state["final_status"] = case.status
+        state["is_recovered"] = case.status == "recovered"
+        state["is_escalated"] = case.status == "escalated"
+        state["history"] = []
+        state["step_count"] = 0
+        state["max_steps"] = 5
+
+        log_audit(
+            case_id=state["case_id"],
+            stage="load",
+            action="early_exit_final_status",
+            details=f"Refused to run. Existing status: {case.status}",
+            outcome="stopped"
+        )
+        return state
+    # =====================================
+
     state["case_data"] = {
         "case_id": case.case_id,
         "customer_name": case.customer_name,
         "customer_phone": case.customer_phone,
         "customer_email": case.customer_email,
         "amount": case.amount,
-        "amount_rupees": case.amount / 100,
+        "amount_rupees": round(case.amount / 100, 2),
         "failure_code": case.failure_code,
         "failure_description": case.failure_description,
         "payment_method": case.payment_method,
@@ -59,133 +109,102 @@ def load_case_node(state: AgentState) -> AgentState:
         "status": case.status,
         "subscription_id": case.subscription_id
     }
+
+    # Initialize agent memory
+    state["history"] = []
+    state["step_count"] = 0
+    state["max_steps"] = 5
     state["should_stop"] = False
+    state["stop_reason"] = None
     state["is_recovered"] = False
     state["is_escalated"] = False
+    state["final_status"] = None
+    state["current_thought"] = None
+    state["current_action"] = None
+    state["current_action_input"] = None
+    state["current_observation"] = None
+    state["current_reflection"] = None
+
+    log_audit(
+        case_id=state["case_id"],
+        stage="load",
+        action="case_loaded",
+        details=f"Loaded case {state['case_id']}",
+        outcome="success"
+    )
     return state
 
 def diagnose_node(state: AgentState) -> AgentState:
     """
-    Diagnose the underlying root cause of the subscription payment failure using LLM.
-    
-    Parameters:
-        state (AgentState): Current graph state containing case_data.
-        
-    Returns:
-        AgentState: Updated state containing structured diagnosis JSON.
+    Sub-Agent 1: Financial & Gateway Diagnostic Agent.
+    Evaluates failure severity, bank network health, previous attempts, and selects the recovery action & channel.
     """
     case = state["case_data"]
+    history = state.get("history", [])
+    step = state.get("step_count", 0) + 1
 
-    system_prompt = """You are an expert payment recovery specialist working for an Indian fintech.
-                        Your job is to diagnose why a subscription payment failed.
+    history_text = ""
+    used_channels = []
+    if history:
+        history_text = "\n\nPrevious Recovery Attempts:\n"
+        for h in history:
+            ch = h.get('action_input',{}).get('channel')
+            if ch:
+                used_channels.append(ch)
+            obs = h.get('observation', {})
+            paid_str = "PAID" if obs.get("customer_paid") else "NOT PAID"
+            history_text += f"- Step {h.get('step')}: Channel '{ch}' | Customer Status: {paid_str} | Reflection: {h.get('reflection','')}\n"
 
-                        Respond ONLY with valid JSON in this exact format:
-                        {
-                        "root_cause": "one of: insufficient_funds | bank_issue | soft_decline | hard_decline | mandate_issue | expired_instrument | technical_error | unknown",
-                        "severity": "high | medium | low",
-                        "is_recoverable": true/false,
-                        "recommended_strategy": "short recommendation",
-                        "reasoning": "brief explanation"
-                        }
-                        """
+    system_prompt = """You are a senior Financial Diagnostics & Payment Gateway Recovery Specialist for Razorpay India.
 
-    human_prompt = f"""
-        Diagnose this failed subscription payment:
+Your role:
+1. Diagnose the root cause of recurring subscription payment failures.
+2. Determine if the failure is recoverable (soft failure) or non-recoverable (hard failure).
+3. Select the best recovery action and channel according to fintech dunning rules.
 
-        Customer: {case['customer_name']}
-        Amount: Rs.{case['amount_rupees']}
-        Payment Method: {case['payment_method']}
-        Failure Code: {case['failure_code']}
-        Failure Description: {case['failure_description']}
-        Previous attempts: {case['previous_attempts']}
-        Recovery attempts so far: {case['recovery_attempts']}
-        """
+### Action Options:
+- "create_and_send_link": Generate a live Razorpay payment link and dispatch a customer nudge.
+- "schedule_retry": Schedule an automated mandate retry (use only for transient bank downtimes/issuer unavailability).
+- "escalate": Immediately escalate to human operations (for all hard failures or exhausted attempts).
+- "stop": Terminate recovery workflow.
 
-    try:
-        response = llm.invoke([
-            SystemMessage(content=system_prompt),
-            HumanMessage(content=human_prompt)
-        ])
-        content = response.content.strip()
+### Strict Fintech Decision Rules:
+1. Hard Failures (mandate_revoked, invalid_account, card_expired, do_not_honor):
+   - ALWAYS choose action "escalate" at Step 1. Automated nudges cannot fix permanently revoked or invalid mandates.
+2. Soft Failures (bank_timeout, insufficient_funds, soft_decline, issuer_unavailable):
+   - Step 1: Default to channel "whatsapp" (highest customer engagement in India).
+   - Step 2: If previous WhatsApp attempt went unacknowledged, pivot to channel "sms".
+   - Step 3: If SMS went unacknowledged, pivot to channel "email" or "schedule_retry".
+   - NEVER repeat the same channel consecutively.
+3. If step >= max_steps:
+   - Choose action "escalate".
 
-        # Clean possible markdown
-        if content.startswith("```"):
-            content = content.split("```")[1]
-            if content.startswith("json"):
-                content = content[4:]
-        content = content.strip()
-
-        diagnosis = json.loads(content)
-        state["diagnosis"] = diagnosis
-
-        log_audit(
-            case_id=state["case_id"],
-            stage="diagnose",
-            action="root_cause_analysis",
-            details=json.dumps(diagnosis),
-            llm_reasoning=diagnosis.get("reasoning"),
-            outcome="success"
-        )
-    except Exception as e:
-        state["diagnosis"] = {
-            "root_cause": "unknown",
-            "confidence": "low",
-            "is_recoverable": True,
-            "recommended_strategy": "retry with payment link",
-            "reasoning": f"LLM error: {str(e)}"
-        }
-        log_audit(
-            case_id=state["case_id"],
-            stage="diagnose",
-            action="root_cause_analysis",
-            details=str(e),
-            outcome="fallback"
-        )
-
-    return state
-
-def decide_intervention_node(state: AgentState) -> AgentState:
-    """
-    Select the optimal recovery action, communication channel, and message template using LLM.
-    
-    Parameters:
-        state (AgentState): Current graph state with case_data and diagnosis.
-        
-    Returns:
-        AgentState: Updated state containing structured decision JSON.
-    """
-    case = state["case_data"]
-    diagnosis = state.get("diagnosis", {})
-
-    system_prompt = """You are an expert subscription recovery agent.
-                        Based on the diagnosis, decide the single best next action.
-
-                        You must respond ONLY with valid JSON in this exact format:
-                        {
-                        "action": "one of: send_whatsapp | send_sms | send_email | create_and_send_link | schedule_retry | escalate | mark_unrecoverable",
-                        "channel": "whatsapp | sms | email | none",
-                        "message_tone": "polite | urgent | helpful",
-                        "message_body": "the exact message to send to the customer (in simple English or Hinglish if appropriate)",
-                        "retry_delay_hours": 0,
-                        "reasoning": "why you chose this action"
-                        }
-
-                        Rules you must respect:
-                        - Prefer WhatsApp for Indian customers when possible.
-                        - If hard decline or mandate_revoked -> lean toward asking customer to update payment method.
-                        - If soft decline or insufficient_funds -> payment link + polite reminder is good.
-                        - If too many attempts already -> escalate.
-                        - Keep message short and clear.
-                        """
+### Output Format (Strict JSON ONLY):
+{
+  "diagnosis": {
+    "root_cause": "Plain English description of why payment failed",
+    "severity": "hard_failure | soft_failure",
+    "is_recoverable": true | false
+  },
+  "thought": "Clear tactical rationale explaining why this action and channel were chosen",
+  "action": "create_and_send_link | schedule_retry | escalate | stop",
+  "channel": "whatsapp | sms | email",
+  "retry_delay_hours": 0,
+  "reason": "Escalation reason if action is escalate"
+}
+"""
 
     human_prompt = f"""
-                        Case details:
-                        {json.dumps(case, indent=2)}
+Current Case Snapshot:
+- Case ID: {case.get('case_id')}
+- Customer: {case.get('customer_name')}
+- Amount: ₹{case.get('amount_rupees')}
+- Failure Code: {case.get('failure_code')}
+- Current Step: {step} of maximum {state.get('max_steps', 5)}
+- Channels Already Used: {used_channels if used_channels else 'None'}
+{history_text}
 
-                        Diagnosis:
-                        {json.dumps(diagnosis, indent=2)}
-
-Decide the best next intervention.
+Perform root-cause diagnosis and output your action decision in JSON.
 """
 
     try:
@@ -193,148 +212,329 @@ Decide the best next intervention.
             SystemMessage(content=system_prompt),
             HumanMessage(content=human_prompt)
         ])
-        content = response.content.strip()
+        parsed = safe_json_parse(response.content)
 
-        if content.startswith("```"):
-            content = content.split("```")[1]
-            if content.startswith("json"):
-                content = content[4:]
-        content = content.strip()
+        is_hard_failure = case.get("failure_code") in ["mandate_revoked", "invalid_account", "card_expired", "do_not_honor"]
+        default_act = "escalate" if is_hard_failure else "create_and_send_link"
+        action = parsed.get("action") or default_act
+        if is_hard_failure:
+            action = "escalate"
 
-        decision = json.loads(content)
-        state["decision"] = decision
+        state["diagnosis"] = parsed.get("diagnosis", {})
+        state["current_thought"] = parsed.get("thought", "Diagnostic completed")
+        state["current_action"] = action
+        
+        # Enforce channel rotation if duplicate
+        decided_channel = parsed.get("channel", "whatsapp")
+        if used_channels and decided_channel == used_channels[-1] and action == "create_and_send_link":
+            if decided_channel == "whatsapp":
+                decided_channel = "sms"
+            elif decided_channel == "sms":
+                decided_channel = "email"
+
+        state["current_action_input"] = {
+            "channel": decided_channel,
+            "retry_delay_hours": parsed.get("retry_delay_hours", 0),
+            "reason": parsed.get("reason", "Hard failure detected" if is_hard_failure else "")
+        }
+        state["step_count"] = step
 
         log_audit(
             case_id=state["case_id"],
-            stage="decide",
-            action="choose_intervention",
-            details=json.dumps(decision),
-            llm_reasoning=decision.get("reasoning"),
+            stage="diagnose",
+            action="gateway_diagnosis",
+            details=json.dumps(parsed),
+            llm_reasoning=parsed.get("thought"),
             outcome="success"
         )
     except Exception as e:
-        # Safe fallback
-        state["decision"] = {
-            "action": "create_and_send_link",
+        is_hard_failure = case.get("failure_code") in ["mandate_revoked", "invalid_account", "card_expired", "do_not_honor"]
+        state["current_thought"] = f"Diagnostic fallback: {str(e)}"
+        state["current_action"] = "escalate" if is_hard_failure else "create_and_send_link"
+        state["current_action_input"] = {
             "channel": "whatsapp",
-            "message_tone": "polite",
-            "message_body": f"Hi {case['customer_name'].split()[0]}, your subscription payment of Rs.{case['amount_rupees']} failed. Please complete it using the link we are sending.",
             "retry_delay_hours": 0,
-            "reasoning": f"Fallback due to LLM error: {str(e)}"
+            "reason": f"Fallback: {str(e)}"
         }
-        log_audit(
-            case_id=state["case_id"],
-            stage="decide",
-            action="choose_intervention",
-            details=str(e),
-            outcome="fallback"
-        )
+        state["step_count"] = step
+        log_audit(state["case_id"], "diagnose", "gateway_diagnosis", str(e), outcome="fallback")
 
     return state
 
-def execute_node(state: AgentState) -> AgentState:
+def craft_message_node(state: AgentState) -> AgentState:
     """
-    Execute the intervention strategy decided by the agent using deterministic tools.
-    
-    Parameters:
-        state (AgentState): Current graph state containing decision details.
-        
-    Returns:
-        AgentState: Updated state with execution_result dictionary.
+    Sub-Agent 2: Personalized Customer Communication & Localization Specialist.
+    Generates polite, brand-safe, high-converting copy adapted to channel constraints and customer context.
     """
-    case_id = state["case_id"]
-    decision = state.get("decision", {})
-    action = decision.get("action", "create_and_send_link")
-    channel = decision.get("channel", "whatsapp")
-    message_body = decision.get("message_body", "Please complete your pending subscription payment.")
+    # Only craft message if action is create_and_send_link
+    if state.get("current_action") != "create_and_send_link":
+        return state
 
-    result = {"success": False, "action": action}
+    case = state["case_data"]
+    action_input = state.get("current_action_input") or {}
+    channel = action_input.get("channel", "whatsapp")
+    diagnosis = state.get("diagnosis", {})
+    customer_first_name = case.get("customer_name", "Customer").split()[0]
+    amount_rupees = case.get("amount_rupees", 0)
+
+    system_prompt = """You are an expert Customer Retention & Payment Localization Copywriter for Razorpay.
+
+Your objective: Write high-converting, empathetic recovery messages that guide customers to complete their payment.
+
+### Strict Tone & Channel Rules:
+- Tone: Extremely polite, respectful, and helpful. NEVER use accusatory, legal, or embarrassing language about money.
+- Channel Constraints:
+  * "whatsapp": 2 to 3 lines. Warm greeting, clear subscription mention, polite call-to-action with "{payment_link}".
+  * "sms": Short and crisp (under 160 characters). Mention amount, subscription, and "{payment_link}".
+  * "email": Professional subject line and polite 2-paragraph body.
+- URL Rule: DO NOT invent fake URLs (like https://...). ALWAYS use the exact literal placeholder "{payment_link}" where the link should appear.
+
+### Output Format (Strict JSON ONLY):
+{
+  "message_body": "Polite copy text including literal {payment_link}",
+  "tone": "polite_supportive",
+  "language": "en"
+}
+"""
+
+    human_prompt = f"""
+Customer Name: {customer_first_name}
+Amount Pending: ₹{amount_rupees}
+Failure Context: {case.get('failure_code')} ({diagnosis.get('root_cause', 'authorization declined')})
+Selected Channel: {channel}
+
+Generate the customer recovery message using {payment_link} as the URL tag.
+"""
 
     try:
-        if action in ["create_and_send_link", "send_whatsapp", "send_sms", "send_email"]:
-            # Create payment link first
+        response = llm.invoke([
+            SystemMessage(content=system_prompt),
+            HumanMessage(content=human_prompt)
+        ])
+        parsed = safe_json_parse(response.content)
+        body = parsed.get("message_body", f"Hi {customer_first_name}, your subscription payment of ₹{amount_rupees} could not be processed. Please complete it securely here: {{payment_link}}")
+        
+        # Ensure {payment_link} is present in body
+        if "{payment_link}" not in body:
+            body = f"{body.rstrip()}\n\nPay securely: {{payment_link}}"
+
+        state["message_payload"] = parsed
+        if not state.get("current_action_input"):
+            state["current_action_input"] = {}
+        state["current_action_input"]["message_body"] = body
+
+        log_audit(
+            case_id=state["case_id"],
+            stage="communication",
+            action="craft_personalized_copy",
+            details=json.dumps(parsed),
+            outcome="success"
+        )
+    except Exception as e:
+        fallback_msg = f"Hi {customer_first_name}, your subscription payment of ₹{amount_rupees} was unsuccessful. Please complete payment using this secure link: {{payment_link}}"
+        if not state.get("current_action_input"):
+            state["current_action_input"] = {}
+        state["current_action_input"]["message_body"] = fallback_msg
+        log_audit(state["case_id"], "communication", "craft_personalized_copy", str(e), outcome="fallback")
+
+    return state
+
+def act_node(state: AgentState) -> AgentState:
+    """Execute the action decided by the LLM"""
+    case_id = state["case_id"]
+    action = state.get("current_action", "create_and_send_link")
+    action_input = state.get("current_action_input") or {}
+    case = state["case_data"]
+
+    # Pre-action out-of-band reconciliation check
+    reconciliation = check_gateway_reconciliation(case_id)
+    if reconciliation.get("is_reconciled"):
+        state["is_recovered"] = True
+        state["final_status"] = "recovered"
+        state["should_stop"] = True
+        state["stop_reason"] = f"Pre-action reconciliation: settled via {reconciliation.get('source', 'external')}"
+        state["current_observation"] = {
+            "success": True,
+            "action": "reconcile",
+            "settled_externally": True,
+            "details": reconciliation.get("details")
+        }
+        return state
+
+    observation = {"success": False, "action": action}
+
+    try:
+        if action == "create_and_send_link":
+            channel = action_input.get("channel", "whatsapp")
+            message_body = action_input.get("message_body", "Please complete your pending payment.")
+
             link_res = create_payment_link(case_id)
             payment_url = link_res.get("short_url") if link_res.get("success") else None
 
-            # Send message
             msg_res = send_message(
                 case_id=case_id,
-                channel=channel if channel != "none" else "whatsapp",
+                channel=channel,
                 message=message_body,
                 payment_link=payment_url
             )
 
-            # NEW: Simulate whether customer actually paid
-            from agent.tools import simulate_customer_payment
+            # Simulate customer response
             payment_sim = simulate_customer_payment(case_id)
 
-            result = {
-                "success": msg_res.get("success", False),
+            observation = {
+                "success": True,
                 "action": action,
                 "payment_link": payment_url,
-                "message_result": msg_res,
-                "payment_simulation": payment_sim
+                "message_sent": msg_res.get("success"),
+                "customer_paid": payment_sim.get("paid", False),
+                "recovered_amount": payment_sim.get("recovered_amount", 0) if payment_sim.get("paid") else 0
             }
 
             if payment_sim.get("paid"):
                 state["is_recovered"] = True
                 state["final_status"] = "recovered"
+                state["should_stop"] = True
+                state["stop_reason"] = "Customer paid successfully"
 
         elif action == "schedule_retry":
-            delay = decision.get("retry_delay_hours", 24)
-            result = schedule_retry(case_id, delay_hours=delay)
+            delay = action_input.get("retry_delay_hours", 24)
+            res = schedule_retry(case_id, delay_hours=delay)
+            observation = {"success": True, "action": "schedule_retry", "delay_hours": delay, "details": res}
 
         elif action == "escalate":
-            reason = decision.get("reasoning", "LLM decided to escalate")
-            result = escalate_case(case_id, reason)
+            reason = action_input.get("reason", "Agent decided to escalate")
+            res = escalate_case(case_id, reason)
+            observation = {"success": True, "action": "escalate", "reason": reason}
             state["is_escalated"] = True
             state["should_stop"] = True
             state["stop_reason"] = "Escalated by agent"
             state["final_status"] = "escalated"
 
-        elif action == "mark_unrecoverable":
-            result = escalate_case(case_id, "Marked unrecoverable by agent")
-            state["is_escalated"] = True
+        elif action == "stop":
+            observation = {"success": True, "action": "stop", "reason": action_input.get("reason", "Agent decided to stop")}
             state["should_stop"] = True
-            state["final_status"] = "unrecoverable"
+            state["stop_reason"] = action_input.get("reason", "Agent decided to stop")
+            state["final_status"] = "stopped"
 
         else:
-            # Default safe action
-            link_res = create_payment_link(case_id)
-            msg_res = send_message(case_id, "whatsapp", message_body, link_res.get("short_url"))
-            result = {"success": True, "action": "fallback_send_link", "details": msg_res}
+            observation = {"success": False, "error": f"Unknown action: {action}"}
 
     except Exception as e:
-        result = {"success": False, "error": str(e)}
-        log_audit(case_id, "execute", action, str(e), outcome="failed")
+        observation = {"success": False, "error": str(e)}
+        log_audit(case_id, "act", action, str(e), outcome="failed")
 
-    state["execution_result"] = result
+    state["current_observation"] = observation
+    return state
+
+def reflect_node(state: AgentState) -> AgentState:
+    """LLM reflects on the observation and decides whether to continue"""
+    case = state["case_data"]
+    thought = state.get("current_thought", "")
+    action = state.get("current_action", "")
+    observation = state.get("current_observation", {})
+    step = state.get("step_count", 1)
+
+    # If already marked to stop (e.g. recovered or escalated), record and exit
+    if state.get("should_stop"):
+        reflection = f"Outcome achieved: {state.get('stop_reason')}"
+        state["current_reflection"] = reflection
+
+        # Save to history
+        state["history"].append({
+            "step": step,
+            "thought": thought,
+            "action": action,
+            "action_input": state.get("current_action_input"),
+            "observation": observation,
+            "reflection": reflection
+        })
+        return state
+
+    system_prompt = """You are reflecting on the result of the last recovery action.
+
+Rules for deciding whether to continue:
+1. If customer has NOT paid yet, but current step < max steps, and the failure is a soft decline (e.g. bank timeout, insufficient balance), you SHOULD continue so the agent can pivot to another channel (e.g. SMS/Email).
+2. Only set should_continue = false if the case is permanently unrecoverable, already paid, or all reasonable channels have been exhausted.
+
+Output JSON ONLY:
+{
+  "reflection": "Honest assessment of customer response and what channel should be tried next",
+  "should_continue": true | false,
+  "reason": "Rationale for continuing to next channel or stopping"
+}
+"""
+
+    human_prompt = f"""
+Case: {case['customer_name']} | ₹{case['amount_rupees']} | Failure: {case['failure_code']}
+Last Action Taken: {action} on {state.get('current_action_input',{}).get('channel')}
+Observation: {json.dumps(observation, indent=2)}
+Current Step: {step} of maximum {state.get('max_steps', 5)}
+
+Evaluate the outcome and decide whether to continue to the next recovery step.
+"""
+
+    try:
+        response = llm.invoke([
+            SystemMessage(content=system_prompt),
+            HumanMessage(content=human_prompt)
+        ])
+        parsed = safe_json_parse(response.content)
+
+        reflection = parsed.get("reflection", "Evaluated observation")
+        should_continue = parsed.get("should_continue", True)
+
+        state["current_reflection"] = reflection
+
+        if not should_continue:
+            state["should_stop"] = True
+            state["stop_reason"] = parsed.get("reason", "Agent decided to stop after reflection")
+            if not state.get("final_status"):
+                state["final_status"] = "stopped_after_reflection"
+
+        log_audit(
+            case_id=state["case_id"],
+            stage="reflect",
+            action="llm_reflection",
+            details=json.dumps(parsed),
+            llm_reasoning=reflection,
+            outcome="success"
+        )
+    except Exception as e:
+        state["current_reflection"] = f"Reflection evaluated: continuing recovery. ({str(e)})"
+        log_audit(state["case_id"], "reflect", "llm_reflection", str(e), outcome="fallback")
+
+    # Always save the full step into history
+    state["history"].append({
+        "step": step,
+        "thought": thought,
+        "action": action,
+        "action_input": state.get("current_action_input"),
+        "observation": observation,
+        "reflection": state.get("current_reflection")
+    })
+
     return state
 
 def check_stop_node(state: AgentState) -> AgentState:
-    """
-    Apply stopping rule boundaries (attempt limits, timeframe checks) and auto-escalate if needed.
-    
-    Parameters:
-        state (AgentState): Current graph state.
-        
-    Returns:
-        AgentState: Updated state with should_stop and stop_reason flags.
-    """
+    """Hard stopping rules + max steps"""
     if state.get("should_stop"):
         return state
 
+    # Max steps
+    if state.get("step_count", 0) >= state.get("max_steps", 5):
+        state["should_stop"] = True
+        state["stop_reason"] = f"Reached max steps ({state.get('max_steps')})"
+        if not state.get("final_status"):
+            state["final_status"] = "max_steps_reached"
+        return state
+
+    # Existing hard rules from tools
     stop_check = check_stopping_rules(state["case_id"])
     if stop_check["should_stop"]:
         state["should_stop"] = True
         state["stop_reason"] = stop_check["reason"]
-
-        # Auto escalate if max attempts reached
-        if "Max attempts" in stop_check["reason"] or "Max days" in stop_check["reason"]:
-            escalate_case(state["case_id"], stop_check["reason"])
-            state["is_escalated"] = True
-            state["final_status"] = "escalated"
-    else:
-        state["should_stop"] = False
+        escalate_case(state["case_id"], stop_check["reason"])
+        state["is_escalated"] = True
+        state["final_status"] = "escalated"
 
     return state

@@ -1,57 +1,56 @@
-# How this works:
-# Runner script to execute the full LangGraph recovery workflow for a single case ID.
-# Prints the structured diagnosis, decision, tool execution output, and final state.
-
 from agent.graph import recovery_graph
 from agent.state import AgentState
 import json
+from pprint import pprint
 
 def run_recovery_for_case(case_id: str):
-    """
-    Execute the recovery agent graph for a given subscription case.
-    
-    Parameters:
-        case_id (str): The unique case identifier (e.g., 'CASE0001').
-        
-    Returns:
-        AgentState: The final state dictionary after workflow completion.
-    """
-    print(f"\n{'='*60}")
-    print(f"Running recovery for {case_id}")
-    print('='*60)
+    print(f"\n{'='*70}")
+    print(f"AGENTIC RECOVERY RUN -> {case_id}")
+    print('='*70)
 
     initial_state: AgentState = {
         "case_id": case_id,
         "case_data": None,
-        "diagnosis": None,
-        "decision": None,
-        "execution_result": None,
+        "history": [],
+        "current_thought": None,
+        "current_action": None,
+        "current_action_input": None,
+        "current_observation": None,
+        "current_reflection": None,
+        "step_count": 0,
+        "max_steps": 5,
         "should_stop": False,
         "stop_reason": None,
         "is_recovered": False,
         "is_escalated": False,
-        "messages": [],
-        "final_status": None
+        "final_status": None,
+        "messages": []
     }
 
     final_state = recovery_graph.invoke(initial_state)
 
-    print("\n--- Diagnosis ---")
-    print(json.dumps(final_state.get("diagnosis"), indent=2))
+    print("\n----- FINAL STATUS -----")
+    print(f"Recovered     : {final_state.get('is_recovered')}")
+    print(f"Escalated     : {final_state.get('is_escalated')}")
+    print(f"Final Status  : {final_state.get('final_status')}")
+    print(f"Stop Reason   : {final_state.get('stop_reason')}")
+    print(f"Total Steps   : {final_state.get('step_count')}")
 
-    print("\n--- Decision ---")
-    print(json.dumps(final_state.get("decision"), indent=2))
-
-    print("\n--- Execution Result ---")
-    print(json.dumps(final_state.get("execution_result"), indent=2))
-
-    print("\n--- Final Control ---")
-    print(f"Should stop: {final_state.get('should_stop')}")
-    print(f"Stop reason: {final_state.get('stop_reason')}")
-    print(f"Escalated: {final_state.get('is_escalated')}")
+    print("\n----- FULL AGENT HISTORY (Think -> Act -> Reflect) -----")
+    history = final_state.get("history", [])
+    if not history:
+        print("No history recorded.")
+    else:
+        for step in history:
+            print(f"\nStep {step.get('step')}:")
+            print(f"  Thought     : {step.get('thought')}")
+            print(f"  Action      : {step.get('action')}")
+            print(f"  Observation : {json.dumps(step.get('observation'), indent=4)[:300]}...")
+            print(f"  Reflection  : {step.get('reflection')}")
 
     return final_state
 
 if __name__ == "__main__":
-    # Test with one case
-    run_recovery_for_case("CASE0001")
+    # Use a case that has not been heavily processed yet
+    # Change this number if needed
+    run_recovery_for_case("CASE0002")
