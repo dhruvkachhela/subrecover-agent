@@ -259,8 +259,8 @@ def fetch_system_metrics():
         total_risk = df["amount_inr"].sum() if total_cases > 0 else 0.0
         
         recovered_df = df[df["status"] == "recovered"]
-        escalated_df = df[df["status"] == "escalated"]
-        open_df = df[df["status"] == "failed_recoverable"]
+        escalated_df = df[(df["status"] == "escalated") | (df["escalated"] == 1) | (df["escalated"] == True)]
+        open_df = df[(df["status"] == "failed_recoverable") & (df["escalated"] != 1) & (df["escalated"] != True)]
         
         total_recovered = recovered_df["recovered_inr"].sum() if len(recovered_df) > 0 else 0.0
         recovery_rate = (len(recovered_df) / total_cases * 100.0) if total_cases > 0 else 0.0
