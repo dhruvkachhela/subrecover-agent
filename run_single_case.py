@@ -45,6 +45,10 @@ def run_recovery_for_case(case_id: str):
             print(f"\nStep {step.get('step')}:")
             print(f"  Thought     : {step.get('thought')}")
             print(f"  Action      : {step.get('action')}")
+            act_in = step.get('action_input') or {}
+            if act_in.get('message_body'):
+                clean_msg = str(act_in.get('message_body')).encode('ascii', 'ignore').decode('ascii')
+                print(f"  Copy (Witty): {clean_msg}")
             print(f"  Observation : {json.dumps(step.get('observation'), indent=4)[:300]}...")
             print(f"  Reflection  : {step.get('reflection')}")
 
