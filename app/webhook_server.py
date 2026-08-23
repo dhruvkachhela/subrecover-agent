@@ -187,17 +187,29 @@ async def handle_razorpay_webhook(
         plink_id = plink_entity.get("id")
         amount_paid = plink_entity.get("amount_paid", 0)
         short_url = plink_entity.get("short_url")
+        notes = plink_entity.get("notes", {})
 
         db = SessionLocal()
         try:
-            # Find case by payment link or short_url in audit logs/notes
             case = None
-            if short_url:
+            # 1. Direct match by case_id stored in payment_link notes
+            if isinstance(notes, dict) and "case_id" in notes:
+                case = db.query(FailedSubscription).filter(FailedSubscription.case_id == notes["case_id"]).first()
+            # 2. Secondary match by short_url or plink_id in notes/audit logs
+            if not case and short_url:
                 case = db.query(FailedSubscription).filter(FailedSubscription.notes.like(f"%{short_url}%")).first()
             if not case and plink_id:
                 case = db.query(FailedSubscription).filter(FailedSubscription.notes.like(f"%{plink_id}%")).first()
 
             if case:
+                # Idempotency check: If already recovered, return success without duplicate logs
+                if case.status == "recovered":
+                    return {
+                        "status": "already_processed",
+                        "event": event_type,
+                        "case_id": case.case_id
+                    }
+
                 case.status = "recovered"
                 case.recovered_amount = amount_paid or case.amount
                 case.last_recovery_action = "payment_link_paid_webhook"
@@ -235,16 +247,32 @@ async def handle_razorpay_webhook(
 
         db = SessionLocal()
         try:
-            case = None
+            # 1. Primary match by unique subscription_id
             if sub_id:
                 case = db.query(FailedSubscription).filter(FailedSubscription.subscription_id == sub_id).first()
+            
+            # 2. Secondary match by case_id stored in Razorpay payment notes
+            notes = pay_entity.get("notes", {})
+            if not case and isinstance(notes, dict) and "case_id" in notes:
+                case = db.query(FailedSubscription).filter(FailedSubscription.case_id == notes["case_id"]).first()
+
+            # 3. Fallback match by email ONLY if exact payment amount matches the failed subscription amount
             if not case and email:
                 case = db.query(FailedSubscription).filter(
                     FailedSubscription.customer_email == email,
+                    FailedSubscription.amount == amt,
                     FailedSubscription.status == "failed_recoverable"
                 ).first()
 
             if case:
+                # Idempotency check: If already recovered, return early
+                if case.status == "recovered":
+                    return {
+                        "status": "already_processed",
+                        "event": event_type,
+                        "case_id": case.case_id
+                    }
+
                 case.status = "recovered"
                 case.recovered_amount = amt or case.amount
                 case.last_recovery_action = "out_of_band_webhook_sync"

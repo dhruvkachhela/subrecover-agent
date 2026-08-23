@@ -214,7 +214,11 @@ Perform root-cause diagnosis and output your action decision in JSON.
         ])
         parsed = safe_json_parse(response.content)
 
-        is_hard_failure = case.get("failure_code") in ["mandate_revoked", "invalid_account", "card_expired", "do_not_honor"]
+        hard_failure_codes = [
+            "mandate_revoked", "invalid_account", "card_expired", "do_not_honor",
+            "account_closed", "stolen_card", "fraudulent", "invalid_bank"
+        ]
+        is_hard_failure = case.get("failure_code") in hard_failure_codes
         default_act = "escalate" if is_hard_failure else "create_and_send_link"
         action = parsed.get("action") or default_act
         if is_hard_failure:
