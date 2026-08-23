@@ -24,15 +24,20 @@ llm = ChatNVIDIA(
 
 def safe_json_parse(text: str) -> dict:
     """Clean and parse JSON from LLM response"""
+    if not text or not isinstance(text, str):
+        return {}
     text = text.strip()
     if text.startswith("```"):
-        text = text.split("```")[1]
+        parts = text.split("```")
+        if len(parts) > 1:
+            text = parts[1]
         if text.startswith("json"):
             text = text[4:]
     text = text.strip()
     try:
-        return json.loads(text)
-    except:
+        res = json.loads(text)
+        return res if isinstance(res, dict) else {}
+    except Exception:
         return {}
 
 # ====================== NODES ======================
@@ -147,13 +152,16 @@ def diagnose_node(state: AgentState) -> AgentState:
     used_channels = []
     if history:
         history_text = "\n\nPrevious Recovery Attempts:\n"
-        for h in history:
-            ch = h.get('action_input',{}).get('channel')
+        for h in (history or []):
+            if not isinstance(h, dict):
+                continue
+            act_in = h.get('action_input') or {}
+            ch = act_in.get('channel') if isinstance(act_in, dict) else None
             if ch:
                 used_channels.append(ch)
-            obs = h.get('observation', {})
-            paid_str = "PAID" if obs.get("customer_paid") else "NOT PAID"
-            history_text += f"- Step {h.get('step')}: Channel '{ch}' | Customer Status: {paid_str} | Reflection: {h.get('reflection','')}\n"
+            obs = h.get('observation') or {}
+            paid_str = "PAID" if (obs.get("customer_paid") if isinstance(obs, dict) else False) else "NOT PAID"
+            history_text += f"- Step {h.get('step', 1)}: Channel '{ch}' | Customer Status: {paid_str} | Reflection: {h.get('reflection','')}\n"
 
     system_prompt = """You are a senior Financial Diagnostics & Payment Gateway Recovery Specialist for Razorpay India.
 
@@ -307,7 +315,7 @@ Amount Pending: ₹{amount_rupees}
 Failure Context: {case.get('failure_code')} ({diagnosis.get('root_cause', 'authorization declined')})
 Selected Channel: {channel}
 
-Generate the customer recovery message using {payment_link} as the URL tag.
+Generate the customer recovery message using {{payment_link}} as the URL tag.
 """
 
     try:
@@ -470,8 +478,8 @@ Output JSON ONLY:
 
     human_prompt = f"""
 Case: {case['customer_name']} | ₹{case['amount_rupees']} | Failure: {case['failure_code']}
-Last Action Taken: {action} on {state.get('current_action_input',{}).get('channel')}
-Observation: {json.dumps(observation, indent=2)}
+Last Action Taken: {action} on {(state.get('current_action_input') or {}).get('channel', 'unknown')}
+Observation: {json.dumps(observation or {}, indent=2)}
 Current Step: {step} of maximum {state.get('max_steps', 5)}
 
 Evaluate the outcome and decide whether to continue to the next recovery step.

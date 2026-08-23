@@ -527,7 +527,9 @@ with tab_runner:
                     if not history:
                         st.info("No intermediate steps recorded.")
                     else:
-                        for step_item in history:
+                        for step_item in (history or []):
+                            if not isinstance(step_item, dict):
+                                continue
                             step_no = step_item.get("step", 1)
                             action_name = step_item.get("action", "unknown")
                             thought = step_item.get("thought", "")
@@ -536,11 +538,11 @@ with tab_runner:
                             reflection = step_item.get("reflection", "")
                             
                             with st.container(border=True):
-                                st.markdown(f"<span class='step-badge'>STEP {step_no} &bull; ACTION: {action_name.upper()}</span>", unsafe_allow_html=True)
+                                st.markdown(f"<span class='step-badge'>STEP {step_no} &bull; ACTION: {str(action_name).upper()}</span>", unsafe_allow_html=True)
                                 
                                 st.markdown(f"**Thought (Diagnostic Analysis):** {thought}")
                                 
-                                if action_input:
+                                if isinstance(action_input, dict) and action_input:
                                     channel = action_input.get("channel")
                                     msg = action_input.get("message_body")
                                     delay = action_input.get("retry_delay_hours")
@@ -553,7 +555,7 @@ with tab_runner:
                                     if msg:
                                         col_act2.write(f"**Personalized Message:** _{msg}_")
                                 
-                                if obs.get("payment_link"):
+                                if isinstance(obs, dict) and obs.get("payment_link"):
                                     link = obs.get("payment_link")
                                     st.markdown(f"**Live Razorpay Payment Link:** [{link}]({link})")
                                     
@@ -561,14 +563,14 @@ with tab_runner:
                                     link_id = link.split("/")[-1]
                                     if st.button(f"Verify Payment on Razorpay REST API ({link_id})", key=f"verify_{link_id}_{step_no}"):
                                         with st.spinner("Querying Razorpay REST API..."):
-                                            verify_res = verify_live_payment_link(link_id)
+                                            verify_res = verify_live_payment_link(link_id) or {}
                                             if verify_res.get("is_paid"):
                                                 st.success(f"Payment Verified on Razorpay API: Status PAID (Amount: ₹{verify_res.get('amount_paid',0)/100:.2f})")
                                                 update_case(selected_case_id, status="recovered", recovered_amount=verify_res.get('amount_paid',0))
                                             else:
                                                 st.info(f"Razorpay API Status: {verify_res.get('status', 'unpaid')}. Customer has not completed checkout yet.")
                                 
-                                if obs:
+                                if isinstance(obs, dict) and obs:
                                     paid_status = obs.get("customer_paid")
                                     sent_status = obs.get("message_sent")
                                     st.markdown(f"**Observation:** Delivery = `{sent_status}` | Customer Paid = `{paid_status}`")
