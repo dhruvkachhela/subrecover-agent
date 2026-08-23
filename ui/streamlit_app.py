@@ -17,16 +17,19 @@ import streamlit.components.v1 as components
 import pandas as pd
 import json
 from datetime import datetime
-from app.database import SessionLocal
+from app.database import SessionLocal, ensure_db_initialized
 from app.models import FailedSubscription, AuditLog
 from agent.graph import recovery_graph
 from agent.state import AgentState
 from agent.tools import verify_live_payment_link, check_gateway_reconciliation, update_case, log_audit
 
+# Ensure database tables and initial cases exist
+ensure_db_initialized()
+
 # Page configuration
 st.set_page_config(
     page_title="SubRecover Agent | Razorpay",
-    page_icon="💳",
+    page_icon="payment",
     layout="wide",
     initial_sidebar_state="collapsed"
 )

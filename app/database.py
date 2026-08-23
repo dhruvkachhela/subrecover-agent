@@ -25,6 +25,19 @@ def init_db():
     Base.metadata.create_all(bind=engine)
     print("Database tables created.")
 
+def ensure_db_initialized():
+    """Ensure tables exist and seed sample CSV if empty."""
+    Base.metadata.create_all(bind=engine)
+    db = SessionLocal()
+    try:
+        count = db.query(FailedSubscription).count()
+        if count == 0:
+            load_csv_to_db()
+    except Exception:
+        load_csv_to_db()
+    finally:
+        db.close()
+
 def get_db():
     """
     Generator that provides a transactional database session.

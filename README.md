@@ -1,12 +1,13 @@
 # SubRecover Agent: Autonomous Subscription Revenue Recovery Engine
 
 [![Razorpay AI Buildathon 2026](https://img.shields.io/badge/Razorpay%20Buildathon-AI%20Revenue%20Recovery-blue.svg?style=flat-square)](https://razorpay.com/buildathon)
+[![Live Interactive Demo](https://img.shields.io/badge/Live%20Demo-Streamlit%20Cloud-red.svg?style=flat-square)](https://subrecover-agent.streamlit.app)
 [![LangGraph](https://img.shields.io/badge/Orchestration-LangGraph%20v0.2-orange.svg?style=flat-square)](https://github.com/langchain-ai/langgraph)
 [![NVIDIA NIM](https://img.shields.io/badge/LLM-Meta%20Llama%203.1%208B%20(NVIDIA%20NIM)-green.svg?style=flat-square)](https://build.nvidia.com)
 [![FastAPI](https://img.shields.io/badge/Webhook%20Server-FastAPI-teal.svg?style=flat-square)](https://fastapi.tiangolo.com)
-[![Streamlit](https://img.shields.io/badge/Operational%20Console-Streamlit-red.svg?style=flat-square)](https://streamlit.io)
 [![Python 3.11+](https://img.shields.io/badge/Python-3.11%2B-blue.svg?style=flat-square)](https://python.org)
 
+> **Live Interactive Console:** [https://subrecover-agent.streamlit.app](https://subrecover-agent.streamlit.app)  
 > **SubRecover Agent** is a production-grade, event-driven, autonomous recovery engine for recurring subscription payment failures. Built specifically for India's payments landscape, it pairs **cognitive LLM diagnosis** with **strict deterministic financial safety guardrails** to eliminate involuntary churn without spamming users or triggering gateway penalty fees.
 
 ---
