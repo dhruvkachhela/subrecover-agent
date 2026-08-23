@@ -439,18 +439,18 @@ with tab_runner:
         col_run_action, col_ext_sim, col_rec_check = st.columns([2, 2, 2])
         
         with col_run_action:
-            trigger_run = st.button("▶ Run Multi-Agent Recovery", type="primary", use_container_width=True, help="Executes the Multi-Agent Cognitive Graph.")
+            trigger_run = st.button("Run Multi-Agent Recovery", type="primary", use_container_width=True, help="Executes the Multi-Agent Cognitive Graph.")
         with col_ext_sim:
-            trigger_simulate_ext = st.button("💳 Simulate External Payment", use_container_width=True, help="Simulates customer paying directly on merchant app/UPI outside the agent to test edge-case reconciliation.")
+            trigger_simulate_ext = st.button("Simulate External Payment", use_container_width=True, help="Simulates customer paying directly on merchant app/UPI outside the agent to test edge-case reconciliation.")
         with col_rec_check:
-            trigger_reconcile = st.button("🔄 Sync Gateway Reconciliation", use_container_width=True, help="Queries gateway & ledger to check if customer settled subscription via external channel.")
+            trigger_reconcile = st.button("Sync Gateway Reconciliation", use_container_width=True, help="Queries gateway & ledger to check if customer settled subscription via external channel.")
 
         # Simulate External Settlement Action
         if trigger_simulate_ext:
             from agent.tools import record_external_settlement
             ext_res = record_external_settlement(selected_case_id, channel="direct_upi")
             if ext_res.get("success"):
-                st.success(f"**✓ External Payment Recorded!**\n\n• **Payment Ref:** `{ext_res.get('payment_id')}`\n• **Channel:** `Direct UPI / Merchant App`\n• **Amount:** ₹{ext_res.get('recovered_amount', 0)/100:,.2f}\n\n*The case is now reconciled in the ledger. If you click **▶ Run Multi-Agent Recovery**, the agent will detect this at Step 0 and halt without sending duplicate customer nudges.*")
+                st.success(f"**External Payment Recorded**\n\n• **Payment Ref:** `{ext_res.get('payment_id')}`\n• **Channel:** `Direct UPI / Merchant App`\n• **Amount:** ₹{ext_res.get('recovered_amount', 0)/100:,.2f}\n\n*The case is now reconciled in the ledger. If you click **Run Multi-Agent Recovery**, the agent will detect this at Step 0 and halt without sending duplicate customer nudges.*")
             else:
                 st.error(f"Failed to record external payment: {ext_res.get('error')}")
 
@@ -459,21 +459,21 @@ with tab_runner:
             rec_res = check_gateway_reconciliation(selected_case_id)
             if rec_res.get("is_reconciled"):
                 with st.container(border=True):
-                    st.markdown("##### 🟢 Gateway Reconciliation Result: RECONCILED")
+                    st.markdown("##### Gateway Reconciliation Result: RECONCILED")
                     st.markdown(f"• **Source:** `{rec_res.get('source', 'external')}`")
                     st.markdown(f"• **Amount Reconciled:** ₹{rec_res.get('recovered_amount', 0)/100:,.2f}")
                     st.markdown(f"• **Details:** {rec_res.get('details')}")
                     st.markdown("*Status automatically synchronized to `recovered` in database.*")
             else:
                 with st.container(border=True):
-                    st.markdown("##### 🟡 Gateway Reconciliation Result: NOT RECONCILED")
+                    st.markdown("##### Gateway Reconciliation Result: NOT RECONCILED")
                     st.markdown("• **Status:** Case remains open for automated agent recovery.")
                     st.markdown("• **Details:** No external or out-of-band settlement detected across merchant app or direct UPI records.")
 
         # Reset button if case is already closed/recovered/escalated
         if case_row['status'] in ['recovered', 'escalated', 'closed']:
             st.write("")
-            if st.button("↺ Reset This Case to Open (Test Recovery Again)", use_container_width=False):
+            if st.button("Reset This Case to Open (Test Recovery Again)", use_container_width=False):
                 update_case(selected_case_id, status="failed_recoverable", recovered_amount=0, recovery_attempts=0, notes=None)
                 st.rerun()
 
@@ -556,11 +556,11 @@ with tab_runner:
                                     
                                     # Live REST API Verifier Button
                                     link_id = link.split("/")[-1]
-                                    if st.button(f"🔍 Verify Payment on Razorpay REST API ({link_id})", key=f"verify_{link_id}_{step_no}"):
+                                    if st.button(f"Verify Payment on Razorpay REST API ({link_id})", key=f"verify_{link_id}_{step_no}"):
                                         with st.spinner("Querying Razorpay REST API..."):
                                             verify_res = verify_live_payment_link(link_id)
                                             if verify_res.get("is_paid"):
-                                                st.success(f"✓ Payment Verified on Razorpay API! Status: PAID (Amount: ₹{verify_res.get('amount_paid',0)/100:.2f})")
+                                                st.success(f"Payment Verified on Razorpay API: Status PAID (Amount: ₹{verify_res.get('amount_paid',0)/100:.2f})")
                                                 update_case(selected_case_id, status="recovered", recovered_amount=verify_res.get('amount_paid',0))
                                             else:
                                                 st.info(f"Razorpay API Status: {verify_res.get('status', 'unpaid')}. Customer has not completed checkout yet.")

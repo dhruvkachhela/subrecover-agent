@@ -1,33 +1,33 @@
-# 💳 SubRecover Agent: Autonomous Subscription Revenue Recovery Engine
+# SubRecover Agent: Autonomous Subscription Revenue Recovery Engine
 
-[![Razorpay AI Buildathon 2026](https://img.shields.io/badge/Razorpay%20Buildathon-AI%20Revenue%20Recovery-blue.svg?style=for-the-badge&logo=razorpay)](https://razorpay.com/buildathon)
-[![LangGraph](https://img.shields.io/badge/Orchestration-LangGraph%20v0.2-FF6F00.svg?style=for-the-badge&logo=langchain)](https://github.com/langchain-ai/langgraph)
-[![NVIDIA NIM](https://img.shields.io/badge/LLM-Meta%20Llama%203.1%208B%20(NVIDIA%20NIM)-76B900.svg?style=for-the-badge&logo=nvidia)](https://build.nvidia.com)
-[![FastAPI](https://img.shields.io/badge/Webhook%20Server-FastAPI-009688.svg?style=for-the-badge&logo=fastapi)](https://fastapi.tiangolo.com)
-[![Streamlit](https://img.shields.io/badge/Operational%20Console-Streamlit-FF4B4B.svg?style=for-the-badge&logo=streamlit)](https://streamlit.io)
-[![Python 3.11+](https://img.shields.io/badge/Python-3.11%2B-3776AB.svg?style=for-the-badge&logo=python)](https://python.org)
+[![Razorpay AI Buildathon 2026](https://img.shields.io/badge/Razorpay%20Buildathon-AI%20Revenue%20Recovery-blue.svg?style=flat-square)](https://razorpay.com/buildathon)
+[![LangGraph](https://img.shields.io/badge/Orchestration-LangGraph%20v0.2-orange.svg?style=flat-square)](https://github.com/langchain-ai/langgraph)
+[![NVIDIA NIM](https://img.shields.io/badge/LLM-Meta%20Llama%203.1%208B%20(NVIDIA%20NIM)-green.svg?style=flat-square)](https://build.nvidia.com)
+[![FastAPI](https://img.shields.io/badge/Webhook%20Server-FastAPI-teal.svg?style=flat-square)](https://fastapi.tiangolo.com)
+[![Streamlit](https://img.shields.io/badge/Operational%20Console-Streamlit-red.svg?style=flat-square)](https://streamlit.io)
+[![Python 3.11+](https://img.shields.io/badge/Python-3.11%2B-blue.svg?style=flat-square)](https://python.org)
 
 > **SubRecover Agent** is a production-grade, event-driven, autonomous recovery engine for recurring subscription payment failures. Built specifically for India's payments landscape, it pairs **cognitive LLM diagnosis** with **strict deterministic financial safety guardrails** to eliminate involuntary churn without spamming users or triggering gateway penalty fees.
 
 ---
 
-## 📑 Table of Contents
+## Table of Contents
 
-1. [The Problem: Why Subscription Payments Fail in India](#-the-problem-why-subscription-payments-fail-in-india)
-2. [Why Existing Solutions Fail](#-why-existing-solutions-fail-vs-how-subrecover-wins)
-3. [System Architecture & Data Flow](#-system-architecture--data-flow)
-4. [Deep Dive: The 6-Stage Cyclic Cognitive Graph](#-deep-dive-the-6-stage-cyclic-cognitive-graph)
-5. [Financial Safety, Guardrails & Bounded Execution](#-financial-safety-guardrails--bounded-execution)
-6. [The "What Broke at 2 AM" Narrative (Production Edge Case)](#-the-what-broke-at-2-am-narrative-production-edge-case)
-7. [Quantitative Benchmark & Evaluation Results](#-quantitative-benchmark--evaluation-results)
-8. [Operational Dashboard Walkthrough](#-operational-dashboard-walkthrough)
-9. [Webhook Engine & Event Lifecycle](#-webhook-engine--event-lifecycle)
-10. [Repository Structure](#-repository-structure)
-11. [Quickstart & Verification Guide](#-quickstart--verification-guide)
+1. [The Problem: Why Subscription Payments Fail in India](#the-problem-why-subscription-payments-fail-in-india)
+2. [Why Existing Solutions Fail vs How SubRecover Wins](#why-existing-solutions-fail-vs-how-subrecover-wins)
+3. [System Architecture and Data Flow](#system-architecture-and-data-flow)
+4. [Deep Dive: The 6-Stage Cyclic Cognitive Graph](#deep-dive-the-6-stage-cyclic-cognitive-graph)
+5. [Financial Safety, Guardrails and Bounded Execution](#financial-safety-guardrails-and-bounded-execution)
+6. [The "What Broke at 2 AM" Narrative (Production Edge Case)](#the-what-broke-at-2-am-narrative-production-edge-case)
+7. [Quantitative Benchmark and Evaluation Results](#quantitative-benchmark-and-evaluation-results)
+8. [Operational Dashboard Walkthrough](#operational-dashboard-walkthrough)
+9. [Webhook Engine and Event Lifecycle](#webhook-engine-and-event-lifecycle)
+10. [Repository Structure](#repository-structure)
+11. [Quickstart and Verification Guide](#quickstart-and-verification-guide)
 
 ---
 
-## 📉 The Problem: Why Subscription Payments Fail in India
+## The Problem: Why Subscription Payments Fail in India
 
 In recurring billing (SaaS, OTT, EdTech, D2C), **15% to 25% of top-line revenue is lost to involuntary churn**—failed recurring debits where the customer never intended to cancel.
 
@@ -41,9 +41,9 @@ In recurring billing (SaaS, OTT, EdTech, D2C), **15% to 25% of top-line revenue 
                  ▼                                                                 ▼
    ┌───────────────────────────┐                                     ┌───────────────────────────┐
    │    SOFT DECLINES (60%)    │                                     │    HARD DECLINES (40%)    │
-   │  * Bank Network Outages   │                                     │  * Mandate Explicitly Revoked│
-   │  * Transient Insufficient │                                     │  * Expired Debit/Credit Card│
-   │  * UPI Daily Throttle Limit│                                    │  * Account Closed / Blocked│
+   │  - Bank Network Outages   │                                     │  - Mandate Explicitly Revoked│
+   │  - Transient Insufficient │                                     │  - Expired Debit/Credit Card│
+   │  - UPI Daily Throttle Limit│                                    │  - Account Closed / Blocked│
    └─────────────┬─────────────┘                                     └─────────────┬─────────────┘
                  │                                                                 │
                  ▼                                                                 ▼
@@ -53,20 +53,20 @@ In recurring billing (SaaS, OTT, EdTech, D2C), **15% to 25% of top-line revenue 
 
 ---
 
-## ⚔️ Why Existing Solutions Fail vs. How SubRecover Wins
+## Why Existing Solutions Fail vs How SubRecover Wins
 
 | Feature | Legacy Cron Retries / Dumb Dunning | Generic AutoGPT / Open Agent | SubRecover Agent (Our Solution) |
 | :--- | :--- | :--- | :--- |
 | **Failure Understanding** | Blindly retries all codes on a fixed timer | Reads logs but hallucinates root causes | **Strict Category Separation (Hard vs. Soft)** |
-| **Payment URLs** | Generic links or static portal URLs | Often hallucinates invalid `https://` URLs | **Official Razorpay REST API Generated Short Links** |
-| **Channel Strategy** | Hardcoded SMS spam | Unpredictable messaging | **Intelligent Channel Rotation (WhatsApp ➔ SMS ➔ Email)** |
-| **Tone & Messaging** | Robotic, accusatory templates | Inconsistent prompts | **Empathetic, Brand-Safe, Localized Copy** |
+| **Payment URLs** | Generic links or static portal URLs | Often hallucinates invalid URLs | **Official Razorpay REST API Generated Short Links** |
+| **Channel Strategy** | Hardcoded SMS spam | Unpredictable messaging | **Intelligent Channel Rotation (WhatsApp -> SMS -> Email)** |
+| **Tone and Messaging** | Robotic, accusatory templates | Inconsistent prompts | **Empathetic, Brand-Safe, Localized Copy** |
 | **Financial Safety** | High gateway penalties on dead cards | Can loop infinitely or double charge | **Deterministic Circuit Breakers (Max 5 steps, Hard Guardrails)** |
-| **Out-of-Band Sync** | ❌ None (Causes double-charging) | ❌ None | **✅ Live Gateway Reconciliation & Idempotency Lock** |
+| **Out-of-Band Sync** | None (Causes double-charging) | None | **Live Gateway Reconciliation and Idempotency Lock** |
 
 ---
 
-## 🏛️ System Architecture & Data Flow
+## System Architecture and Data Flow
 
 SubRecover integrates directly into merchant billing backends and payment gateways:
 
@@ -97,31 +97,31 @@ flowchart TB
 
 ---
 
-## 🔄 Deep Dive: The 6-Stage Cyclic Cognitive Graph
+## Deep Dive: The 6-Stage Cyclic Cognitive Graph
 
 The brain of SubRecover is a cyclic **StateGraph** that executes discrete cognitive and deterministic stages. The graph separates **interactive dunning loops** from **immediate terminal actions**:
 
 ```mermaid
 flowchart TD
-    START([🎯 Case Queued]) --> N1["1. load_case_node<br/><i>Loads metadata & verifies pre-action reconciliation</i>"]
+    START([Case Queued]) --> N1["1. load_case_node<br/><i>Loads metadata & verifies pre-action reconciliation</i>"]
     
     N1 --> C1{Already Paid<br/>Out-of-Band?}
-    C1 -->|Yes: Settled Externally| END_RECON([🏁 END: Recovered Out-of-Band<br/><i>0 Tokens, Instant Exit</i>])
+    C1 -->|Yes: Settled Externally| END_RECON([END: Recovered Out-of-Band<br/><i>0 Tokens, Instant Exit</i>])
     
     C1 -->|No: Unsettled| N2["2. diagnose_node (LLM)<br/><i>Root-Cause Diagnosis & Strategy Selection</i>"]
 
     N2 --> C2{Failure<br/>Classification}
     
     %% Branch 1: Hard Failure / Fatal Error
-    C2 -->|🔴 Hard Failure: mandate_revoked / invalid_account| ACT_ESC["4a. act_node: Escalate<br/><i>Flags human ops ticket, updates status</i>"]
-    ACT_ESC --> END_ESC([🛑 END: Escalated to Human Ops<br/><i>Terminates in Step 1</i>])
+    C2 -->|Hard Failure: mandate_revoked / invalid_account| ACT_ESC["4a. act_node: Escalate<br/><i>Flags human ops ticket, updates status</i>"]
+    ACT_ESC --> END_ESC([END: Escalated to Human Ops<br/><i>Terminates in Step 1</i>])
     
     %% Branch 2: Transient Gateway Downtime
-    C2 -->|🟡 Transient Outage: schedule_retry| ACT_RETRY["4b. act_node: Schedule Retry<br/><i>Sets 24h cooling timer in ledger</i>"]
-    ACT_RETRY --> END_RETRY([⏳ END: Scheduled Retry<br/><i>Pauses execution</i>])
+    C2 -->|Transient Outage: schedule_retry| ACT_RETRY["4b. act_node: Schedule Retry<br/><i>Sets 24h cooling timer in ledger</i>"]
+    ACT_RETRY --> END_RETRY([END: Scheduled Retry<br/><i>Pauses execution</i>])
 
     %% Branch 3: Soft Recoverable Failure (Interactive Dunning Loop)
-    C2 -->|🟢 Soft Failure: create_and_send_link| N3["3. craft_message_node (LLM)<br/><i>Personalized WhatsApp/SMS/Email Copy</i>"]
+    C2 -->|Soft Failure: create_and_send_link| N3["3. craft_message_node (LLM)<br/><i>Personalized WhatsApp/SMS/Email Copy</i>"]
     
     N3 --> ACT_LINK["4c. act_node: Dispatch Link<br/><i>Generates live Razorpay link via SDK</i>"]
     
@@ -130,8 +130,8 @@ flowchart TD
     N5 --> N6["6. check_stop_node (Guardrails)<br/><i>Enforces max 5 steps & safety rules</i>"]
     
     N6 --> C3{Outcome?}
-    C3 -->|Customer Completed Payment| END_PAID([🏁 END: Recovered via Dunning<br/><i>Success</i>])
-    C3 -->|Max 5 Steps Exceeded| END_MAX([🛑 END: Escalated to Ops<br/><i>Exhausted Retries</i>])
+    C3 -->|Customer Completed Payment| END_PAID([END: Recovered via Dunning<br/><i>Success</i>])
+    C3 -->|Max 5 Steps Exceeded| END_MAX([END: Escalated to Ops<br/><i>Exhausted Retries</i>])
     C3 -->|Unpaid & Steps Remain| N2
 ```
 
@@ -139,40 +139,40 @@ flowchart TD
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────────────────────────┐
-│ 1. load_case_node (app/database.py ➔ agent/nodes.py)                                       │
-│    • Fetches the case record from SQLite using case_id.                                     │
-│    • Performs pre-action reconciliation (check_gateway_reconciliation).                     │
-│    • If already paid externally, terminates early with ZERO token spend.                   │
+│ 1. load_case_node (app/database.py -> agent/nodes.py)                                       │
+│    - Fetches the case record from SQLite using case_id.                                     │
+│    - Performs pre-action reconciliation (check_gateway_reconciliation).                     │
+│    - If already paid externally, terminates early with ZERO token spend.                   │
 ├─────────────────────────────────────────────────────────────────────────────────────────────┤
-│ 2. diagnose_node (agent/nodes.py ➔ LLM)                                                    │
-│    • Evaluates failure_code, history of attempts, and bank network state.                   │
-│    • DETERMINISTIC SAFETY OVERRIDE: If code is in [mandate_revoked, invalid_account,        │
+│ 2. diagnose_node (agent/nodes.py -> LLM)                                                    │
+│    - Evaluates failure_code, history of attempts, and bank network state.                   │
+│    - DETERMINISTIC SAFETY OVERRIDE: If code is in [mandate_revoked, invalid_account,        │
 │      card_expired, do_not_honor], it FORCES action = "escalate" regardless of LLM output.   │
-│    • Enforces channel rotation (WhatsApp ➔ SMS ➔ Email) to prevent spamming.               │
+│    - Enforces channel rotation (WhatsApp -> SMS -> Email) to prevent spamming.               │
 ├─────────────────────────────────────────────────────────────────────────────────────────────┤
-│ 3. craft_message_node (agent/nodes.py ➔ LLM)                                               │
-│    • Invoked ONLY when action == "create_and_send_link".                                    │
-│    • Tone: Polite, supportive, never accusatory.                                            │
-│    • Strictly enforces the literal placeholder {payment_link} to prevent URL hallucination. │
+│ 3. craft_message_node (agent/nodes.py -> LLM)                                               │
+│    - Invoked ONLY when action == "create_and_send_link".                                    │
+│    - Tone: Polite, supportive, never accusatory.                                            │
+│    - Strictly enforces the literal placeholder {payment_link} to prevent URL hallucination. │
 ├─────────────────────────────────────────────────────────────────────────────────────────────┤
-│ 4. act_node (agent/tools.py ➔ Razorpay API)                                                │
-│    • Calls razorpay_client.payment_link.create(...) to get a real short_url.               │
-│    • Simulates or dispatches multi-channel notification with live URL.                      │
-│    • Observes customer payment response.                                                    │
+│ 4. act_node (agent/tools.py -> Razorpay API)                                                │
+│    - Calls razorpay_client.payment_link.create(...) to get a real short_url.               │
+│    - Simulates or dispatches multi-channel notification with live URL.                      │
+│    - Observes customer payment response.                                                    │
 ├─────────────────────────────────────────────────────────────────────────────────────────────┤
-│ 5. reflect_node (agent/nodes.py ➔ LLM)                                                     │
-│    • Ingests the tool observation (customer paid / not paid / gateway timeout).             │
-│    • Produces an assessment on what channel to pivot to in the next cycle.                 │
+│ 5. reflect_node (agent/nodes.py -> LLM)                                                     │
+│    - Ingests the tool observation (customer paid / not paid / gateway timeout).             │
+│    - Produces an assessment on what channel to pivot to in the next cycle.                 │
 ├─────────────────────────────────────────────────────────────────────────────────────────────┤
-│ 6. check_stop_node (agent/nodes.py ➔ Hard Rules)                                            │
-│    • Hard cap check: If step_count >= 5, stops immediately.                                 │
-│    • Evaluates cooling-off time windows and writes final immutable audit log.              │
+│ 6. check_stop_node (agent/nodes.py -> Hard Rules)                                            │
+│    - Hard cap check: If step_count >= 5, stops immediately.                                 │
+│    - Evaluates cooling-off time windows and writes final immutable audit log.              │
 └─────────────────────────────────────────────────────────────────────────────────────────────┘
 ```
 
 ---
 
-## 🛡️ Financial Safety, Guardrails & Bounded Execution
+## Financial Safety, Guardrails and Bounded Execution
 
 When building AI for fintech, unconstrained LLMs are a liability. SubRecover uses a **Dual-Pillar Architecture**:
 
@@ -187,10 +187,10 @@ When building AI for fintech, unconstrained LLMs are a liability. SubRecover use
   ┌───────────────────────────────┐                           ┌───────────────────────────────┐
   │     COGNITIVE LLM PILLAR      │                           │  DETERMINISTIC SAFETY PILLAR  │
   ├───────────────────────────────┤                           ├───────────────────────────────┤
-  │ * Root-Cause Failure Diagnosis│                           │ * Hard Failure Auto-Escalate  │
-  │ * Context-Aware Tone & Copy   │                           │ * Live SDK Link Generation    │
-  │ * Channel Rotation Reasoning  │                           │ * Max 5-Step Circuit Breaker  │
-  │ * Multi-Step Reflection       │                           │ * Out-of-Band Idempotency     │
+  │ - Root-Cause Failure Diagnosis│                           │ - Hard Failure Auto-Escalate  │
+  │ - Context-Aware Tone & Copy   │                           │ - Live SDK Link Generation    │
+  │ - Channel Rotation Reasoning  │                           │ - Max 5-Step Circuit Breaker  │
+  │ - Multi-Step Reflection       │                           │ - Out-of-Band Idempotency     │
   └───────────────────────────────┘                           └───────────────────────────────┘
 ```
 
@@ -201,22 +201,22 @@ When building AI for fintech, unconstrained LLMs are a liability. SubRecover use
 
 ---
 
-## 💥 The "What Broke at 2 AM" Narrative (Production Edge Case)
+## The "What Broke at 2 AM" Narrative (Production Edge Case)
 
 ### The Failure Incident
 During load testing of cyclic dunning schedules across simulated 48-hour retry windows, we hit a critical race condition:
 
 ```
-[Day 1, 10:00 AM] ➔ Customer's subscription charge fails (bank_timeout).
-[Day 1, 10:01 AM] ➔ SubRecover Agent diagnoses soft failure, sends WhatsApp dunning link.
-[Day 1, 09:30 PM] ➔ Customer independently logs into merchant website & pays via UPI QR.
-[Day 2, 02:00 AM] ➔ SubRecover Agent wakes up for Step 2 retry on scheduled cron.
-                   💥 CRITICAL BUG: Agent had no awareness of the website payment!
-                   💥 It prepared an urgent SMS dunning escalation & scheduled a second debit!
+[Day 1, 10:00 AM] -> Customer subscription charge fails (bank_timeout).
+[Day 1, 10:01 AM] -> SubRecover Agent diagnoses soft failure, sends WhatsApp dunning link.
+[Day 1, 09:30 PM] -> Customer independently logs into merchant website & pays via UPI QR.
+[Day 2, 02:00 AM] -> SubRecover Agent wakes up for Step 2 retry on scheduled cron.
+                     CRITICAL BUG: Agent had no awareness of the website payment.
+                     It prepared an urgent SMS dunning escalation & scheduled a second debit.
 ```
 
 ### The Root Cause
-The agent’s internal `history` in `AgentState` was isolated from external merchant ledger events that happened outside its direct chat/SMS link flow.
+The agent internal `history` in `AgentState` was isolated from external merchant ledger events that happened outside its direct chat/SMS link flow.
 
 ### How We Got Out of It
 We architected **Pre-Action Gateway Reconciliation Hooks** (`check_gateway_reconciliation` in [`agent/tools.py`](file:///agent/tools.py)):
@@ -244,12 +244,12 @@ def check_gateway_reconciliation(case_id: str) -> Dict[str, Any]:
     return {"is_reconciled": False}
 ```
 
-* **Integration Points:** Embedded directly into `load_case_node` (Entry check) and `act_node` (Pre-execution check).
-* **Result:** If an external payment is detected anywhere across the lifecycle, the agent logs an audit event, unlocks the mandate, and terminates with `RECOVERED` in 0 steps.
+- **Integration Points:** Embedded directly into `load_case_node` (Entry check) and `act_node` (Pre-execution check).
+- **Result:** If an external payment is detected anywhere across the lifecycle, the agent logs an audit event, unlocks the mandate, and terminates with `RECOVERED` in 0 steps.
 
 ---
 
-## 📊 Quantitative Benchmark & Evaluation Results
+## Quantitative Benchmark and Evaluation Results
 
 Tested on a benchmark dataset of **101 diverse failure cases** across all major Indian failure categories (`evaluate_batch.py`):
 
@@ -279,40 +279,40 @@ SUBRECOVER AGENT - RULE-BASED EVALUATION REPORT
 
 ---
 
-## 🖥️ Operational Dashboard Walkthrough
+## Operational Dashboard Walkthrough
 
 Launch the Streamlit console with `streamlit run ui/streamlit_app.py`:
 
 ```
 ┌────────────────────────────────────────────────────────────────────────────────────────┐
-│ 💳 SubRecover Agent | Razorpay Enterprise Recovery Console                              │
+│ SubRecover Agent | Razorpay Enterprise Recovery Console                                 │
 ├────────────────────────────────────────────────────────────────────────────────────────┤
 │ [ Tab 1: Single Case Runner ]  [ Tab 2: Large Batch Eval ]  [ Tab 3: Architecture ]    │
 │                                                                                        │
-│ ▶ Select Case: [ CASE0002 - ₹299.00 - bank_timeout - Card ]                           │
-│ [ 🚀 Run Agentic Recovery ]  [ ⚡ Simulate External Payment ]  [ 🔄 Sync Gateway ]     │
+│ Select Case: [ CASE0002 - Rs. 299.00 - bank_timeout - Card ]                           │
+│ [ Run Agentic Recovery ]  [ Simulate External Payment ]  [ Sync Gateway ]              │
 │                                                                                        │
-│ ┌─ Step 1: Ingestion & Diagnosis ────────────────────────────────────────────────────┐ │
-│ │ THOUGHT : Bank timeout detected on HDFC debit mandate. High recovery potential.   │ │
-│ │ ACTION  : create_and_send_link via WhatsApp                                        │ │
-│ │ COPY    : "Hi Vikram, your Pro subscription payment of ₹299 was interrupted..."    │ │
-│ │ RZP LINK: https://rzp.io/i/rec_89f2a91b (Live Razorpay Link)                       │ │
-│ └────────────────────────────────────────────────────────────────────────────────────┘ │
-│ ┌─ Step 2: Customer Response & Reflection ───────────────────────────────────────────┐ │
-│ │ OBSERVATION: Customer paid successfully via payment link.                          │ │
-│ │ OUTCOME    : ✅ RECOVERED | Status updated in ledger                               │ │
-│ └────────────────────────────────────────────────────────────────────────────────────┘ │
+│ -- Step 1: Ingestion & Diagnosis ----------------------------------------------------  │
+│ THOUGHT : Bank timeout detected on HDFC debit mandate. High recovery potential.        │
+│ ACTION  : create_and_send_link via WhatsApp                                            │
+│ COPY    : "Hi Vikram, your Pro subscription payment of Rs. 299 was interrupted..."     │
+│ RZP LINK: https://rzp.io/i/rec_89f2a91b (Live Razorpay Link)                           │
+│ -------------------------------------------------------------------------------------  │
+│ -- Step 2: Customer Response & Reflection -------------------------------------------  │
+│ OBSERVATION: Customer paid successfully via payment link.                              │
+│ OUTCOME    : RECOVERED | Status updated in ledger                                      │
+│ -------------------------------------------------------------------------------------  │
 └────────────────────────────────────────────────────────────────────────────────────────┘
 ```
 
-* **Tab 1 (Live Runner):** Step-by-step cognitive visualizer with live Razorpay links, thoughts, actions, and observations. Includes controls to simulate external payments and test 2 AM reconciliation.
-* **Tab 2 (Large Batch Evaluation):** Visual charts of failure code distributions, recovery percentages, and step counts across 100+ cases.
-* **Tab 3 (System Architecture):** Rendered interactive high-contrast Mermaid diagrams of the state graph and data flow.
-* **Tab 4 (Immutable Audit Ledger):** Searchable, real-time table of every database transaction and reasoning trace.
+- **Tab 1 (Live Runner):** Step-by-step cognitive visualizer with live Razorpay links, thoughts, actions, and observations. Includes controls to simulate external payments and test 2 AM reconciliation.
+- **Tab 2 (Large Batch Evaluation):** Visual charts of failure code distributions, recovery percentages, and step counts across 100+ cases.
+- **Tab 3 (System Architecture):** Rendered interactive high-contrast Mermaid diagrams of the state graph and data flow.
+- **Tab 4 (Immutable Audit Ledger):** Searchable, real-time table of every database transaction and reasoning trace.
 
 ---
 
-## ⚡ Webhook Engine & Event Lifecycle
+## Webhook Engine and Event Lifecycle
 
 SubRecover includes an asynchronous **FastAPI Webhook Server** (`app/webhook_server.py`):
 
@@ -340,7 +340,7 @@ sequenceDiagram
 
 ---
 
-## 📂 Repository Structure
+## Repository Structure
 
 ```
 subrecover-agent/
@@ -374,7 +374,7 @@ subrecover-agent/
 │   └── webhook_server.py     # FastAPI Razorpay webhook ingestion server
 │
 ├── data/
-│   ├── failed_subscriptions.csv # Synthetic benchmark dataset (101 cases)
+│   ├── failed_subscriptions.csv # Benchmark transaction dataset (101 cases)
 │   └── generate_batch.py     # Dataset generation script
 │
 └── ui/
@@ -383,9 +383,9 @@ subrecover-agent/
 
 ---
 
-## 🚀 Quickstart & Verification Guide
+## Quickstart and Verification Guide
 
-### 1. Environment Setup (30 Seconds)
+### 1. Environment Setup
 ```bash
 # Clone the repository
 git clone https://github.com/<your-username>/subrecover-agent.git
@@ -445,7 +445,7 @@ python app/webhook_server.py
 
 ---
 
-## 🏆 Razorpay AI Buildathon Submission Checklist
+## Razorpay AI Buildathon Submission Checklist
 
 - [x] **Track Selected:** AI Revenue Recovery
 - [x] **Public GitHub Repository:** Clean, well-structured, zero hardcoded secrets.
@@ -457,4 +457,4 @@ python app/webhook_server.py
 
 ---
 
-**Built with ❤️ for the Razorpay AI Buildathon 2026.**
+**Built for the Razorpay AI Buildathon 2026.**
