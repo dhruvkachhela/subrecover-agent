@@ -144,8 +144,14 @@ def diagnose_node(state: AgentState) -> AgentState:
     Sub-Agent 1: Financial & Gateway Diagnostic Agent.
     Evaluates failure severity, bank network health, previous attempts, and selects the recovery action & channel.
     """
-    case = state["case_data"]
-    history = state.get("history", [])
+    case = state.get("case_data") or {}
+    if not case:
+        state["should_stop"] = True
+        state["stop_reason"] = "Case data is missing or uninitialized"
+        state["final_status"] = "error"
+        return state
+
+    history = state.get("history") or []
     step = state.get("step_count", 0) + 1
 
     history_text = ""
@@ -282,11 +288,11 @@ def craft_message_node(state: AgentState) -> AgentState:
     if state.get("current_action") != "create_and_send_link":
         return state
 
-    case = state["case_data"]
+    case = state.get("case_data") or {}
     action_input = state.get("current_action_input") or {}
     channel = action_input.get("channel", "whatsapp")
-    diagnosis = state.get("diagnosis", {})
-    customer_first_name = case.get("customer_name", "Customer").split()[0]
+    diagnosis = state.get("diagnosis") or {}
+    customer_first_name = str(case.get("customer_name", "Customer")).split()[0]
     amount_rupees = case.get("amount_rupees", 0)
 
     system_prompt = """You are an expert Customer Retention & Payment Localization Copywriter for Razorpay.
@@ -356,7 +362,7 @@ def act_node(state: AgentState) -> AgentState:
     case_id = state["case_id"]
     action = state.get("current_action", "create_and_send_link")
     action_input = state.get("current_action_input") or {}
-    case = state["case_data"]
+    case = state.get("case_data") or {}
 
     # Pre-action out-of-band reconciliation check
     reconciliation = check_gateway_reconciliation(case_id)
@@ -440,7 +446,7 @@ def act_node(state: AgentState) -> AgentState:
 
 def reflect_node(state: AgentState) -> AgentState:
     """LLM reflects on the observation and decides whether to continue"""
-    case = state["case_data"]
+    case = state.get("case_data") or {}
     thought = state.get("current_thought", "")
     action = state.get("current_action", "")
     observation = state.get("current_observation", {})
@@ -477,7 +483,7 @@ Output JSON ONLY:
 """
 
     human_prompt = f"""
-Case: {case['customer_name']} | ₹{case['amount_rupees']} | Failure: {case['failure_code']}
+Case: {case.get('customer_name', 'Customer')} | ₹{case.get('amount_rupees', 0)} | Failure: {case.get('failure_code', 'unknown')}
 Last Action Taken: {action} on {(state.get('current_action_input') or {}).get('channel', 'unknown')}
 Observation: {json.dumps(observation or {}, indent=2)}
 Current Step: {step} of maximum {state.get('max_steps', 5)}
