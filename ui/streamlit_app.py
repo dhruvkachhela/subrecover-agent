@@ -682,20 +682,24 @@ flowchart TB
         react_mermaid = """
 flowchart TD
     A[1. Ingestion: load_case] --> RECC{Reconciled Out-of-Band?}
-    RECC -->|Yes| REC[Outcome: Recovered]
+    RECC -->|Yes| REC[🏁 Recovered Out-of-Band]
     RECC -->|No| B[2. Sub-Agent 1: diagnose_node]
     
-    B -->|Action: create_and_send_link| C[3. Sub-Agent 2: craft_message_node]
-    B -->|Action: escalate / stop| D[4. Execute: act_node]
-    C --> D
+    B -->|🔴 Hard Failure: escalate| D_ESC[4a. Execute: Escalate Ticket]
+    D_ESC --> ESC[🛑 Outcome: Escalated to Ops]
     
-    D --> E[5. Observe & Reflect: reflect_node]
+    B -->|🟡 Transient Outage: retry| D_RETRY[4b. Execute: Schedule 24h Retry]
+    D_RETRY --> RETRY[⏳ Outcome: Scheduled Retry]
+    
+    B -->|🟢 Soft Failure: send_link| C[3. Sub-Agent 2: craft_message_node]
+    C --> D_LINK[4c. Execute: Dispatch Live Razorpay Link]
+    
+    D_LINK --> E[5. Observe & Reflect: reflect_node]
     E --> F{6. Safety Guard: check_stop}
     
-    F -->|Step under 5| B
     F -->|Customer Paid| REC
-    F -->|Hard Failure / Max Steps| ESC[Outcome: Escalated]
-    F -->|Exhausted| STOP[Outcome: Stopped]
+    F -->|Unpaid & Step under 5| B
+    F -->|Max Steps 5 Exceeded| ESC
         """
         render_mermaid(react_mermaid, height=580)
 

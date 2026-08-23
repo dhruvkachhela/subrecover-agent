@@ -99,30 +99,40 @@ flowchart TB
 
 ## 🔄 Deep Dive: The 6-Stage Cyclic Cognitive Graph
 
-The brain of SubRecover is a cyclic **StateGraph** that executes discrete cognitive and deterministic stages:
+The brain of SubRecover is a cyclic **StateGraph** that executes discrete cognitive and deterministic stages. The graph separates **interactive dunning loops** from **immediate terminal actions**:
 
 ```mermaid
 flowchart TD
     START([🎯 Case Queued]) --> N1["1. load_case_node<br/><i>Loads metadata & verifies pre-action reconciliation</i>"]
     
     N1 --> C1{Already Paid<br/>Out-of-Band?}
-    C1 -->|Yes: Settled Externally| END_REC([🏁 Mark RECOVERED & Terminate])
-    C1 -->|No: Unsettled| N2["2. diagnose_node (LLM)<br/><i>Root-cause diagnosis & Strategy selection</i>"]
+    C1 -->|Yes: Settled Externally| END_RECON([🏁 END: Recovered Out-of-Band<br/><i>0 Tokens, Instant Exit</i>])
+    
+    C1 -->|No: Unsettled| N2["2. diagnose_node (LLM)<br/><i>Root-Cause Diagnosis & Strategy Selection</i>"]
 
-    N2 --> C2{Selected<br/>Action?}
+    N2 --> C2{Failure<br/>Classification}
     
-    C2 -->|create_and_send_link| N3["3. craft_message_node (LLM)<br/><i>Personalized WhatsApp/SMS/Email copy</i>"]
-    C2 -->|escalate / schedule_retry / stop| N4["4. act_node (Deterministic)<br/><i>Executes tools, generates live links</i>"]
+    %% Branch 1: Hard Failure / Fatal Error
+    C2 -->|🔴 Hard Failure: mandate_revoked / invalid_account| ACT_ESC["4a. act_node: Escalate<br/><i>Flags human ops ticket, updates status</i>"]
+    ACT_ESC --> END_ESC([🛑 END: Escalated to Human Ops<br/><i>Terminates in Step 1</i>])
     
-    N3 --> N4
+    %% Branch 2: Transient Gateway Downtime
+    C2 -->|🟡 Transient Outage: schedule_retry| ACT_RETRY["4b. act_node: Schedule Retry<br/><i>Sets 24h cooling timer in ledger</i>"]
+    ACT_RETRY --> END_RETRY([⏳ END: Scheduled Retry<br/><i>Pauses execution</i>])
+
+    %% Branch 3: Soft Recoverable Failure (Interactive Dunning Loop)
+    C2 -->|🟢 Soft Failure: create_and_send_link| N3["3. craft_message_node (LLM)<br/><i>Personalized WhatsApp/SMS/Email Copy</i>"]
     
-    N4 --> N5["5. reflect_node (LLM)<br/><i>Evaluates observation & customer response</i>"]
+    N3 --> ACT_LINK["4c. act_node: Dispatch Link<br/><i>Generates live Razorpay link via SDK</i>"]
     
-    N5 --> N6["6. check_stop_node (Guardrail)<br/><i>Circuit breaker, max steps, stopping rules</i>"]
+    ACT_LINK --> N5["5. reflect_node (LLM)<br/><i>Observes customer response & link status</i>"]
     
-    N6 --> C3{Termination<br/>Triggered?}
-    C3 -->|Paid / Escalated / Max Steps| END_TERM([🛑 END: Ledger Committed])
-    C3 -->|Unsettled & Steps Remain| N2
+    N5 --> N6["6. check_stop_node (Guardrails)<br/><i>Enforces max 5 steps & safety rules</i>"]
+    
+    N6 --> C3{Outcome?}
+    C3 -->|Customer Completed Payment| END_PAID([🏁 END: Recovered via Dunning<br/><i>Success</i>])
+    C3 -->|Max 5 Steps Exceeded| END_MAX([🛑 END: Escalated to Ops<br/><i>Exhausted Retries</i>])
+    C3 -->|Unpaid & Steps Remain| N2
 ```
 
 ### Stage-by-Stage Breakdown:
