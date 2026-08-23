@@ -36,6 +36,6 @@ class Config:
     DATABASE_URL = _get_setting("DATABASE_URL", "sqlite:///db/subrecover.db")
     MAX_ATTEMPTS = int(_get_setting("MAX_ATTEMPTS", "4"))
     MAX_DAYS = int(_get_setting("MAX_DAYS", "7"))
-    ENVIRONMENT = _get_setting("ENVIRONMENT", "production")
+    ENVIRONMENT = _get_setting("ENVIRONMENT", "development")
 
 config = Config()

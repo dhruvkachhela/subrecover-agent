@@ -8,7 +8,7 @@
 [![Python 3.11+](https://img.shields.io/badge/Python-3.11%2B-blue.svg?style=flat-square)](https://python.org)
 
 > **Live Interactive Console:** [https://subsrecover-agent.streamlit.app/](https://subsrecover-agent.streamlit.app/)  
-> **SubRecover Agent** is a production-grade, event-driven, autonomous recovery engine for recurring subscription payment failures. Built specifically for India's payments landscape, it pairs **cognitive LLM diagnosis** with **strict deterministic financial safety guardrails** to eliminate involuntary churn without spamming users or triggering gateway penalty fees.
+> **SubRecover Agent** is an event-driven, autonomous recovery engine for recurring subscription payment failures. Built specifically for India's payments landscape, it pairs **cognitive LLM diagnosis** with **strict deterministic financial safety guardrails** to eliminate involuntary churn without spamming users or triggering gateway penalty fees.
 
 ---
 
@@ -19,7 +19,7 @@
 3. [System Architecture and Data Flow](#system-architecture-and-data-flow)
 4. [Deep Dive: The 6-Stage Cyclic Cognitive Graph](#deep-dive-the-6-stage-cyclic-cognitive-graph)
 5. [Financial Safety, Guardrails and Bounded Execution](#financial-safety-guardrails-and-bounded-execution)
-6. [The "What Broke at 2 AM" Narrative (Production Edge Case)](#the-what-broke-at-2-am-narrative-production-edge-case)
+6. [The "What Broke at 2 AM" Narrative (Real-World Edge Case)](#the-what-broke-at-2-am-narrative-real-world-edge-case)
 7. [Quantitative Benchmark and Evaluation Results](#quantitative-benchmark-and-evaluation-results)
 8. [Operational Dashboard Walkthrough](#operational-dashboard-walkthrough)
 9. [Webhook Engine and Event Lifecycle](#webhook-engine-and-event-lifecycle)
@@ -202,7 +202,7 @@ When building AI for fintech, unconstrained LLMs are a liability. SubRecover use
 
 ---
 
-## The "What Broke at 2 AM" Narrative (Production Edge Case)
+## The "What Broke at 2 AM" Narrative (Real-World Edge Case)
 
 ### The Failure Incident
 During load testing of cyclic dunning schedules across simulated 48-hour retry windows, we hit a critical race condition:
@@ -451,7 +451,7 @@ python app/webhook_server.py
 - [x] **Track Selected:** AI Revenue Recovery
 - [x] **Public GitHub Repository:** Clean, well-structured, zero hardcoded secrets.
 - [x] **Architecture Diagram:** Comprehensive Mermaid diagrams of LangGraph & Data Flow.
-- [x] **Production Edge Case:** Full "What Broke at 2 AM" reconciliation breakdown documented.
+- [x] **Real-World Edge Case:** Full "What Broke at 2 AM" reconciliation breakdown documented.
 - [x] **Live API Integrations:** Official Razorpay SDK payment link generation + live status fetch.
 - [x] **Quantitative Evaluation:** 101 benchmark cases evaluated with 0 safety violations.
 - [x] **Operational UI:** High-contrast Streamlit console with live execution visualization.

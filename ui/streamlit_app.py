@@ -1,6 +1,6 @@
 """
 SubRecover Agent - Enterprise Recovery Dashboard
-Production-grade operational console for subscription failure diagnostics,
+Interactive operational console for subscription failure diagnostics,
 multi-step cognitive recovery execution, system architecture visualization, and immutable audit inspection.
 """
 
