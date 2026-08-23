@@ -17,7 +17,7 @@ from agent.state import AgentState
 llm = ChatNVIDIA(
     model=config.NVIDIA_MODEL,
     api_key=config.NVIDIA_API_KEY,
-    temperature=0.2
+    temperature=0.7
 )
 
 # ====================== HELPER ======================
@@ -293,35 +293,46 @@ def craft_message_node(state: AgentState) -> AgentState:
     channel = action_input.get("channel", "whatsapp")
     diagnosis = state.get("diagnosis") or {}
     customer_first_name = str(case.get("customer_name", "Customer")).split()[0]
-    amount_rupees = case.get("amount_rupees", 0)
+    raw_amount = case.get("amount_rupees", 0)
+    amount_str = f"{int(raw_amount)}" if float(raw_amount).is_integer() else f"{raw_amount:.2f}"
+    step_num = state.get("step_count", 0) + 1
 
-    system_prompt = """You are an expert Customer Retention & Payment Localization Copywriter for Razorpay India.
+    system_prompt = """You are an expert Customer Retention & Payment Copywriter for Indian D2C & SaaS brands.
 
-Your objective: Write high-converting, witty, brand-safe, and playful recovery messages (inspired by Zomato, Swiggy, CRED, and Spotify copy) that guide customers to complete their payment without any embarrassment.
+Your objective: Write high-converting, dynamic, witty, and brand-safe recovery messages inspired by top Indian apps (like Zomato, Swiggy, CRED, and Spotify).
 
-### Tone & Channel Rules:
-- Tone: Friendly, witty, playful, and supportive. Use light humor about bank network hiccups (e.g., "Your bank took a mini power nap 😴"). NEVER use accusatory, legal, or embarrassing language about money.
-- Channel Constraints:
-  * "whatsapp": 2 to 3 lines. Catchy greeting, witty mention of subscription, and clear call-to-action with "{payment_link}".
-  * "sms": Short, crisp, and playful (under 160 chars). Mention amount, subscription, and "{payment_link}".
-  * "email": Friendly subject line and warm 2-paragraph body.
-- URL Rule: DO NOT invent fake URLs (like https://...). ALWAYS use the exact literal placeholder "{payment_link}" where the link should appear.
+### Strict Copy & Variety Rules:
+- Dynamic Creativity: Be creative, fresh, and varied EVERY single time. DO NOT repeat the exact same sentence or template.
+- Diverse Angles to Try:
+  * Angle A (Light Humor): Witty bank network hiccup or tech glitch joke ("Your bank blinked for a second").
+  * Angle B (FOMO / Service Value): Remind them what they're missing out on ("Your premium access is paused").
+  * Angle C (Helpful Nudge): Quick 1-tap resolution hint.
+  * Angle D (Friendly Reminder): Warm, polite D2C check-in.
+- DO NOT say "Love, Razorpay" or sign off as Razorpay! Sign off as the brand service team or use no sign-off.
+- Clean Currency: Always refer to amount as ₹""" + amount_str + """ (e.g. ₹499).
+- Tone: Friendly, witty, non-embarrassing, and supportive. NEVER accusatory or legal.
+- Channel Format:
+  * "whatsapp": 2 to 3 short lines. Catchy opening, clean subscription context, clear call-to-action with literal "{payment_link}".
+  * "sms": Under 160 characters. Crisp, witty, and includes literal "{payment_link}".
+  * "email": Friendly subject line and warm 2-paragraph body including literal "{payment_link}".
+- URL Rule: DO NOT invent fake URLs. ALWAYS include the literal placeholder "{payment_link}".
 
 ### Output Format (Strict JSON ONLY):
 {
-  "message_body": "Witty, playful copy text including literal {payment_link}",
-  "tone": "playful_engaging",
+  "message_body": "Fresh witty copy text including literal {payment_link}",
+  "tone": "witty_d2c",
   "language": "en"
 }
 """
 
     human_prompt = f"""
 Customer Name: {customer_first_name}
-Amount Pending: ₹{amount_rupees}
+Amount Pending: ₹{amount_str}
 Failure Context: {case.get('failure_code')} ({diagnosis.get('root_cause', 'authorization declined')})
 Selected Channel: {channel}
+Current Recovery Attempt: Step {step_num}
 
-Generate the customer recovery message using {{payment_link}} as the URL tag.
+Generate a fresh, unique, high-converting customer recovery message for Step {step_num} using {{payment_link}} as the URL tag.
 """
 
     try:
@@ -330,7 +341,7 @@ Generate the customer recovery message using {{payment_link}} as the URL tag.
             HumanMessage(content=human_prompt)
         ])
         parsed = safe_json_parse(response.content)
-        body = parsed.get("message_body", f"Hi {customer_first_name}, your subscription payment of ₹{amount_rupees} could not be processed. Please complete it securely here: {{payment_link}}")
+        body = parsed.get("message_body", f"Hi {customer_first_name}, your payment of ₹{amount_str} could not be completed. Tap here to resume: {{payment_link}}")
         
         # Ensure {payment_link} is present in body
         if "{payment_link}" not in body:
