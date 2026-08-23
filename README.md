@@ -457,4 +457,4 @@ python app/webhook_server.py
 
 ---
 
-**Built with ❤️ for the Razorpay AI Buildathon 2026.**
+**Built for the Razorpay AI Buildathon 2026.**
