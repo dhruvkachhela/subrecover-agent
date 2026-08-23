@@ -330,7 +330,7 @@ sequenceDiagram
     Note over Webhook: Verifies HMAC-SHA256 Signature
     Webhook->>DB: Ingests FailedSubscription (status: failed_recoverable)
     Webhook-->>Gateway: HTTP 200 OK (Accepted)
-    Webhook->)Agent: Dispatches recovery_graph in BackgroundWorker
+    Webhook->>Agent: Dispatches recovery_graph in BackgroundWorker
     Agent->>Gateway: Calls payment_link.create()
     Agent->>Customer: Dispatches WhatsApp/SMS dunning link
     Customer->>Gateway: Clicks link and completes payment
