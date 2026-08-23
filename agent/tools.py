@@ -415,6 +415,12 @@ def simulate_customer_payment(case_id: str, success_probability: float = 0.42) -
             details=f"Customer did not pay. Probability used: {base_prob:.2f}",
             outcome="not_paid"
         )
+        return {
+            "success": True,
+            "paid": False,
+            "recovered_amount": 0,
+            "probability_used": base_prob
+        }
 def check_gateway_reconciliation(case_id: str) -> Dict[str, Any]:
     """
     Check if the customer settled this subscription through an alternative channel

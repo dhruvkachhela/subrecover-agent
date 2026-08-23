@@ -380,7 +380,7 @@ def act_node(state: AgentState) -> AgentState:
             channel = action_input.get("channel", "whatsapp")
             message_body = action_input.get("message_body", "Please complete your pending payment.")
 
-            link_res = create_payment_link(case_id)
+            link_res = create_payment_link(case_id) or {}
             payment_url = link_res.get("short_url") if link_res.get("success") else None
 
             msg_res = send_message(
@@ -388,16 +388,16 @@ def act_node(state: AgentState) -> AgentState:
                 channel=channel,
                 message=message_body,
                 payment_link=payment_url
-            )
+            ) or {}
 
             # Simulate customer response
-            payment_sim = simulate_customer_payment(case_id)
+            payment_sim = simulate_customer_payment(case_id) or {}
 
             observation = {
                 "success": True,
                 "action": action,
                 "payment_link": payment_url,
-                "message_sent": msg_res.get("success"),
+                "message_sent": msg_res.get("success", False),
                 "customer_paid": payment_sim.get("paid", False),
                 "recovered_amount": payment_sim.get("recovered_amount", 0) if payment_sim.get("paid") else 0
             }
