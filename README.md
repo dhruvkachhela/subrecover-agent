@@ -39,12 +39,21 @@ In recurring billing (SaaS, OTT, EdTech, D2C), **15% to 25% of top-line revenue 
                  ┌────────────────────────────────┴────────────────────────────────┐
                  │                                                                 │
                  ▼                                                                 ▼
+<<<<<<< HEAD
    ┌───────────────────────────┐                                     ┌───────────────────────────┐
    │    SOFT DECLINES (60%)    │                                     │    HARD DECLINES (40%)    │
    │  - Bank Network Outages   │                                     │  - Mandate Explicitly Revoked│
    │  - Transient Insufficient │                                     │  - Expired Debit/Credit Card│
    │  - UPI Daily Throttle Limit│                                    │  - Account Closed / Blocked│
    └─────────────┬─────────────┘                                     └─────────────┬─────────────┘
+=======
+   ┌─────────────────────────── ┐                                     ┌──────────────────────────   ─┐
+   │    SOFT DECLINES (60%)     │                                     │    HARD DECLINES (40%)       │
+   │  * Bank Network Outages    │                                     │  * Mandate Explicitly Revoked│
+   │  * Transient Insufficient  │                                     │  * Expired Debit/Credit Card │
+   │  * UPI Daily Throttle Limit│                                     │  * Account Closed / Blocked  │
+   └─────────────┬───────────── ┘                                     └─────────────┬─────────────   ┘
+>>>>>>> db36da6bb5fce0c4b45e55a39d2eaf83f9907b75
                  │                                                                 │
                  ▼                                                                 ▼
       [ RECOVERABLE VIA SMART                                           [ REQUIRES IMMEDIATE HUMAN
