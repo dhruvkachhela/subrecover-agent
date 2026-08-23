@@ -241,7 +241,6 @@ with col_status:
 
 # ====================== DATA LAYER ======================
 
-@st.cache_data(ttl=5)
 def fetch_system_metrics():
     db = SessionLocal()
     try:
@@ -478,6 +477,7 @@ with tab_runner:
             st.write("")
             if st.button("Reset This Case to Open (Test Recovery Again)", use_container_width=False):
                 update_case(selected_case_id, status="failed_recoverable", recovered_amount=0, recovery_attempts=0, notes=None)
+                st.cache_data.clear()
                 st.rerun()
 
         if trigger_run:
